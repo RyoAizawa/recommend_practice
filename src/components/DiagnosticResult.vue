@@ -13,6 +13,7 @@
 }
 .result-area > h2 {
     text-align: center;
+    font-size: 2.8rem;
     padding: 5px;
     margin-bottom: 10px;
     letter-spacing: 7px;
