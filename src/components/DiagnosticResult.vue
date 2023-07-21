@@ -1,7 +1,103 @@
 <script setup>
+import { reactive, watch } from 'vue'
+import RecommendArea from "./RecommendArea";
+const props = defineProps(["userAnswers", "lastBtnChecked"])
+
+const breakdownBtnClick = () => {
+    console.log(props)
+    document.querySelector(".result-breakdownArea").classList.toggle("hide")
+}
+
+let diagnosticResult = reactive({
+    id: 0,
+    lines: 0,
+    dataVolume: 0,
+    totalPrice: 0,
+    plan: "",
+    planPrice: 0,
+    option: "",
+    optionPrice: 0,
+})
+
+watch(props.userAnswers, () => {
+    if (props.lastBtnChecked) {
+        console.log("hey")
+    }
+})
+
+
+
 </script>
 
-<style scope>
+
+<template>
+    <div class="result-area">
+        <h2>
+            <i class="fa fa-file-text-o" aria-hidden="true"></i
+            >診断結果
+        </h2>
+        <div class="result-calcArea">
+            <p>診断結果<span>合計</span></p>
+            <div class="result-calcArea-right">
+                <div class="result-whiteArea">
+                    <div class="result-firstArea">
+                        <div>回線数
+                            <span v-if="diagnosticResult.lines < 1">-</span>
+                            <span v-else>{{ diagnosticResult.lines }}</span>
+                            回線
+                        </div>
+                        <div>データ容量
+                            <span v-if="diagnosticResult.dataVolume < 1">-</span>
+                            <span v-else>{{ diagnosticResult.dataVolume }}</span>
+                            GB
+                        </div>
+                        <div>月額
+                            <span v-if="diagnosticResult.totalPrice < 1">-</span>
+                            <span v-else>{{ diagnosticResult.totalPrice }}</span>
+                            円
+                        </div>
+                        <button class="yellowBtn breakdownBtn" @click="breakdownBtnClick">
+                            <i class="fa fa-angle-down" aria-hidden="true"></i>内訳
+                        </button>
+                    </div>
+                    <!-- 内訳を押すと出力 -->
+                    <div class="result-breakdownArea hide">
+                        <div class="result-breakdownTable">
+                            <div class="result-breakdown-label">
+                                内訳
+                            </div>
+                            <div class="result-breakdown-items">
+                                <div class="result-breakdown-item">
+                                    <div class="result-plan">
+                                        <div class="result-plan-numLabel">
+                                            <span class="yellowBlockNumber">{{ diagnosticResult.id }}</span>
+                                        </div>
+                                        <div class="result-plan-price">
+                                            <div>{{ diagnosticResult.plan }}
+                                                <div class="result-price"><span>{{ diagnosticResult.planPrice }}</span>円</div>
+                                            </div>
+                                            <div class="option" v-if="diagnosticResult.option !== ''">{{ diagnosticResult.option }}
+                                                <div class="result-price"><span>{{ diagnosticResult.optionPrice }}</span>円</div>
+                                            </div>
+                                        </div>
+                                        <div class="result-deleteBtnArea">
+                                            <button class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>削除</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <small>※通話定額割引はご利用開始月より6ヵ月間適用</small>
+            </div>
+        </div>
+    </div>
+    <!-- おすすめプラン表示 -->
+    <RecommendArea v-if="props.lastBtnChecked"></RecommendArea>
+</template>
+
+<style scoped>
 /*--------------------
     診断結果領域
 --------------------*/
@@ -68,9 +164,14 @@
 .result-breakdownArea {
     padding: 15px;
 }
+.hide {
+    display: none;
+    animation-duration: 1.5s;
+    animation-name: fade-in;
+}
+
 .result-breakdownTable {
     display: flex;
-/*    align-items: center;*/
     width: 100%;
     border-top: 1px solid #ab8a11;
     border-bottom: 1px solid #ab8a11;
@@ -111,8 +212,8 @@
     padding: 10px 5px;
     background-color: #fff;
 }
-.result-plan-price > div:first-child {
-    border-bottom: 1px dotted #333;
+.option {
+    border-top: 1px dotted #333;
 }
 
 .result-deleteBtnArea {
@@ -123,56 +224,3 @@
     background-color: #fff;
 }
 </style>
-
-<template>
-    <div class="result-area">
-        <h2>
-            <i class="fa fa-file-text-o" aria-hidden="true"></i
-            >診断結果
-        </h2>
-        <div class="result-calcArea">
-            <p>診断結果<span>合計</span></p>
-            <div class="result-calcArea-right">
-                <div class="result-whiteArea">
-                    <div class="result-firstArea">
-                        <div>回線数<span>-</span>回線</div>
-                        <div>データ容量<span>-</span>GB</div>
-                        <div>月額<span>-</span>円</div>
-                        <button class="yellowBtn breakdownBtn">
-                            <i class="fa fa-angle-down" aria-hidden="true"></i>内訳
-                        </button>
-                    </div>
-                    <!-- 内訳を押すと出力 -->
-                    <div class="result-breakdownArea">
-                        <div class="result-breakdownTable">
-                            <div class="result-breakdown-label">
-                                内訳
-                            </div>
-                            <div class="result-breakdown-items">
-                                <div class="result-breakdown-item">
-                                    <div class="result-plan">
-                                        <div class="result-plan-numLabel">
-                                            <span class="yellowBlockNumber">1</span>
-                                        </div>
-                                        <div class="result-plan-price">
-                                            <div>
-                                                音声SIM5ギガプラン<div class="result-price"><span>990</span>円</div>
-                                            </div>
-                                            <div>
-                                                通話定額10分＋<div class="result-price"><span>290</span>円</div>
-                                            </div>
-                                        </div>
-                                        <div class="result-deleteBtnArea">
-                                            <button class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>削除</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <small>※通話定額割引はご利用開始月より6ヵ月間適用</small>
-            </div>
-        </div>
-    </div>
-</template>

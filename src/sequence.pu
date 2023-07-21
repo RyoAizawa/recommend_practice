@@ -1,0 +1,36 @@
+@startuml sequence
+title 選択肢
+skin rose
+
+participant Q1
+participant Q2
+participant Q3
+participant Q4
+participant Q5
+participant Q6
+
+
+alt 音声SIM
+Q1->Q2: A1-1
+Q2->Q3: A2-1
+Q2->Q3: A2-2
+
+Q3->Q6: A3-1
+Q3->Q6: A3-2
+Q3->Q6: A3-3
+Q3->Q6: A3-4
+end
+
+Q1->Q4: A1-2
+alt SMS
+Q4->Q6: A4-1
+end
+alt データeSIM
+Q5->Q6: A5-1
+end
+alt データ
+Q5->Q6: A5-2
+end
+
+
+@enduml

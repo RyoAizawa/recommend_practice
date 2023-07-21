@@ -1,13 +1,12 @@
 <script setup>
 import DiagnosticResult from "./DiagnosticResult";
-import RecommendArea from "./RecommendArea";
-
 import "vue3-carousel/dist/carousel.css";
 import { Carousel, Slide } from "vue3-carousel";
-import { ref , reactive} from 'vue'
+import { ref , reactive } from 'vue'
 
-// カルーセル
-const myCarousel = ref(null)
+/*---------------------------
+    データ
+---------------------------*/
 // 質問の内容と選択肢が格納されたデータ
 const questionArray = [
     {
@@ -51,7 +50,7 @@ const questionArray = [
             {
                 answerId: 1,
                 image: require("../assets/img/3-1.png"),
-                mainText: `通話定額5分＋`,
+                mainTextBold: `通話定額5分＋`,
                 subText: `1回5分以内の国内通話無料`,
                 smallText: `税込500円`,
                 price: `税込90円`,
@@ -60,7 +59,7 @@ const questionArray = [
             {
                 answerId: 2,
                 image: require("../assets/img/3-2.png"),
-                mainText: `通話定額10分＋`,
+                mainTextBold: `通話定額10分＋`,
                 subText: `1回10分以内の国内通話無料`,
                 smallText: `税込700円`,
                 price: `税込290円`,
@@ -69,7 +68,7 @@ const questionArray = [
             {
                 answerId: 3,
                 image: require("../assets/img/3-3.png"),
-                mainText: `かけ放題＋`,
+                mainTextBold: `かけ放題＋`,
                 subText: `無制限で国内通話無料`,
                 smallText: `税込1400円`,
                 price: `税込990円`,
@@ -130,7 +129,7 @@ const questionArray = [
                 bandMsg: "オススメ!"
             },
             {
-                answerId: 1,
+                answerId: 3,
                 image: require("../assets/img/6-3.png"),
                 mainText: `外出先でゲームアプリを使う`,
             },
@@ -147,48 +146,120 @@ const questionArray = [
         ]
     },
 ]
-// ユーザが選択した各選択肢を保存しておくためのデータ
-const userAnswers = reactive([])
+const myCarousel = ref(null)        // カルーセル
+const slideValue = ref(0)           // カルーセルの移動量
+const currentSlide = ref(0)         // カルーセルの現在のスライド位置
+const userAnswers = reactive([])    // ユーザが選択した各選択肢を保存しておくためのデータ
+let isLastBtnChecked = ref(false)   // ユーザーが最後（6番目）の選択肢を選択したか判定
 
-// 回答ボタンを押した際に走るメソッド
-function btnClick(questionArray, currentQuestionId, answer, currentTarget) {
+/*---------------------------
+    メソッド
+---------------------------*/
+/*
+    最後の選択肢が選択されたかチェックするメソッド
+        questionId ... 回答した質問番号
+*/
+const lastBntChecked = (questionId) => {
+    if(questionId === 6) isLastBtnChecked.value = true
+    console.log(isLastBtnChecked.value)
+}
+
+/*
+    回答ボタンを押した際に走る。
+    1.選択した際にボタンの色を変更するクラスを付与&削除
+    2-1.質問番号に応じた回答内容をデータに格納
+        2-2.回答した内容に応じたカルーセルのスライドを実行するメソッドを呼ぶ
+        currentSlide        ... 現在表示中のスライド位置
+        questionArray       ... 質問の内容と選択肢が格納されたデータ
+        currentQuestionId   ... 今回回答した質問番号
+        answer              ... 今回回答した回答番号
+        currentTarget       ... 今回回答したボタンのノード
+*/
+const btnClick = (currentSlide, questionArray, currentQuestionId, answer, currentTarget) => {
+    // 1.選択した際にボタンの色を変更するクラスを付与&削除
     // 選択したボタンの色を変更するために都度状態を見る必要がある
     const answerBtnAll = document.querySelectorAll(".simulator-answerBtn")
-    const currentQuestions = []
+    const currentQuestions = []     // 今回の質問に対する選択肢のノードを格納する配列
     let btnIndex = 0;
     questionArray.forEach((question) => {
+        // 質問番号内容を捜査し、現在の質問番号と一致するか
         if (question.id === currentQuestionId) {
+            // 一致したら全回答ボタンの中から、今回の質問に対する選択肢のボタンを抽出
             for (let i = 0; i < question.answerArray.length; i++) {
                 currentQuestions.push(answerBtnAll[btnIndex + i])
             }
         } else {
+            // 一致しなければインデックスにその質問の選択肢分の数を足す
             btnIndex += question.answerArray.length
         }
     })
+    // 今回の質問に対する選択肢ボタンを走査
     currentQuestions.forEach((elem) => {
+        // 今回の質問に対する選択済みクラスを一旦初期化
         elem.classList.remove("answered")
+        // 今回選択した選択肢に選択済みのクラスを付与
         if (elem === currentTarget) {
             elem.classList.add("answered")
         }
     })
 
+    // 2-1.質問番号に応じた回答内容をデータに格納
     const currentAnswer = {}
     let overwrite = false
+    // ユーザーが回答した内容を走査
     userAnswers.forEach((answered) => {
         // 今回選択した回答が回答済みの場合
         if (answered.questionId === currentQuestionId) {
             // 今回の回答に上書き
             answered.answerId = answer.answerId
             overwrite = true
+            // 2-2.回答した内容に応じたカルーセルのスライドを実行するメソッドを呼ぶ
+            carouselForeword(answered, currentSlide)
         }
     })
+    // ユーザー回答がまだ1つもされていない場合、新規の回答の場合今回の回答をプッシュ
     if (userAnswers.length < 1 || !overwrite) {
-        // ユーザー回答が1つもされていない場合は情報を上書きしてプッシュ
         currentAnswer.questionId = currentQuestionId
         currentAnswer.answerId = answer.answerId
         userAnswers.push(currentAnswer)
+        carouselForeword(currentAnswer, currentSlide)
     }
-    console.log(userAnswers)
+}
+
+/*
+    「前の設問にもどる」ボタンを押した際にスライド位置を戻すメソッド
+        currentSlide ... 現在表示中のスライド位置
+*/
+const carouselBack = (currentSlide) => {
+    console.log("current", currentSlide.currentSlide);
+    console.log("slide before", slideValue.value)
+
+    myCarousel.value.slideTo(currentSlide.currentSlide - slideValue.value);
+
+    console.log("slide after", slideValue.value)
+}
+
+/*
+    選択肢ボタンを押した際にスライド位置を進めるメソッド
+        answered     ... 今回回答した回答内容
+        currentSlide ... 現在表示中のスライド位置
+*/
+const carouselForeword = (answered, currentSlide) => {
+    console.log(currentSlide)
+    // 電話番号不要
+    if (answered.questionId === 1 && answered.answerId === 2) {
+        slideValue.value = 3
+        myCarousel.value.slideTo(slideValue.value);
+    } else if (answered.questionId === 3
+        || (answered.questionId === 4 && answered.answerId === 2)) {
+        slideValue.value = 3
+        myCarousel.value.slideTo(slideValue.value);
+    }
+    else {
+        slideValue.value = 1
+    }
+    myCarousel.value.slideTo((currentSlide.currentSlide + slideValue.value));
+    console.log(slideValue.value)
 }
 
 // 改行したいけどできない
@@ -199,7 +270,6 @@ const encode = (str) => {
     }
     return str
 }
-
 </script>
 
 <template>
@@ -213,37 +283,34 @@ const encode = (str) => {
                     <span>Q</span>{{ question.question }}
                 </h3>
                 <div class="simulator-answer-area">
-                    <button v-for="answer in question.answerArray" :key="answer"
-                    @click="btnClick(questionArray, question.id, answer, $event.currentTarget); myCarousel.next()"
+                    <div v-for="answer in question.answerArray" :key="answer"
+                    @click="btnClick({currentSlide}, questionArray, question.id, answer, $event.currentTarget); lastBntChecked(question.id) "
                     class="simulator-answerBtn">
-                        <div v-if="answer.image" class="answerBtnImage"><img :src="answer.image"></div>
-                        <div v-if="answer.mainText">{{ encode(answer.mainText) }}</div>
-                        <div v-if="answer.subText">{{ answer.subText }}</div>
-                        <div v-if="answer.smallText">{{ answer.smallText }}</div>
-                        <div v-if="answer.price">{{ answer.price }}</div>
-                        <div v-if="answer.bandMsg" class="bandMsg">{{ answer.bandMsg }}</div>
-                    </button>
+                        <div v-if="answer.image" class="answerBtn-Image"><img :src="answer.image"></div>
+                        <div v-if="answer.mainText" class="answerBtn-mainText">{{ encode(answer.mainText) }}</div>
+                        <div v-if="answer.mainTextBold" class="answerBtn-mainTextBold">{{ encode(answer.mainTextBold) }}</div>
+                        <div v-if="answer.subText" class="answerBtn-subText">{{ answer.subText }}</div>
+                        <div v-if="answer.smallText" class="answerBtn-smallText">{{ answer.smallText }}</div>
+                        <div v-if="answer.price" class="answerBtn-price">{{ answer.price }}</div>
+                        <div v-if="answer.bandMsg" class="answerBtn-bandMsg">{{ answer.bandMsg }}</div>
+                    </div>
                 </div>
             </div>
         </slide>
     </carousel>
-    <p id="test"></p>
     <p>
-        <button class="yellowBtn" @click="myCarousel.prev">
+        <button class="yellowBtn" @click="carouselBack({ currentSlide })">
             <i class="fa fa-angle-left" aria-hidden="true"></i
             >前の設問にもどる
         </button>
     </p>
 </div>
 <!-- 診断結果 -->
-<DiagnosticResult></DiagnosticResult>
-<!-- おすすめプラン表示 -->
-<RecommendArea></RecommendArea>
+<DiagnosticResult :userAnswers="userAnswers" :lastBtnChecked="isLastBtnChecked"></DiagnosticResult>
+
 </template>
 
-
-
-<style>
+<style scoped>
 .simulator-main {
     width: 100%;
     margin: 0 auto;
@@ -269,21 +336,47 @@ const encode = (str) => {
 .simulator-answerBtn {
     position: relative;
     display: block;
-    height: 160px;
-    width: 180px;
+    height: 180px;
+    width: 200px;
     border-radius: 8px;
     background-color: #fafafa;
     border: 2px solid #ccc;
 }
-.answered {
+.answerBtn-Image {
+    padding: 10px;
+}
+.answerBtn-Image img {
+    height: 60px;
+    width: 80px;
+}
+.answerBtn-mainText {
+    font-size: 1.4rem;
+}
+.answerBtn-mainTextBold {
+    font-size: 1.8rem;
     font-weight: bold;
-    color: #ff50ad;;
+}
+.answerBtn-subText {
+    font-size: 1.3rem;
+}
+.answerBtn-smallText {
+    text-decoration: line-through;
+    font-size: 1.1rem;
+}
+
+.answerBtn-price {
+    font-size: 1.4rem;
+
+}
+.answered {
     background-color: #f265b07b;
     border: 2px solid #ff50ad;
 }
-
-.answerBtnImage {
+.answered-text {
+    font-weight: bold;
+    color: #ff50ad;
 }
+
 .fa-angle-left,
 .fa-angle-down {
     font-size: 1.4em;
@@ -298,9 +391,9 @@ const encode = (str) => {
 
 .carousel__item {
     width: 100%;
-    height: 400px;
+    height: 300px;
 }
-.bandMsg {
+.answerBtn-bandMsg {
     position: absolute;
     background-color: red;
     top: 0;
