@@ -15,7 +15,9 @@ console.log(props)
             <div class="recommend-SIM">{{ props.result.sim }}</div>
             <div class="recommend-GB">{{ props.result.dataVolume }}GB</div>
             <div class="recommend-price">月額{{ props.result.totalPrice.toLocaleString() }}円</div>
-            <div></div>
+            <div v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && props.result.option !== ''" class="recommend-option" >
+                {{ props.result.option }}
+            </div>
         </div>
     </div>
     <div class="recommend-breakdownArea">
@@ -89,6 +91,12 @@ console.log(props)
     font-size: 2.6rem;
     font-weight: bold;
 }
+
+.recommend-option {
+    font-size: 2.6rem;
+    font-weight: bold;
+}
+
 .recommend-price {
     text-align: right;
     font-size: 2.6rem;
