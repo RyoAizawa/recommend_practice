@@ -232,12 +232,16 @@ const btnClick = (currentSlide, questionArray, currentQuestionId, answer, curren
     「前の設問にもどる」ボタンを押した際にスライド位置を戻すメソッド
         currentSlide ... 現在表示中のスライド位置
 */
-const carouselBack = () => {
+const carouselBack = (target) => {
     const previousTarget = userAnswersFlow[userAnswersFlow.length - 1].questionId - 1
     myCarousel.value.slideTo(previousTarget);
     // 一時的に保存していた配列データの末尾を削除
     userAnswersFlow.pop()
-    if(userAnswersFlow.length < 1) isBackBtnActive.value = false
+    target.disabled = true
+    window.setTimeout(() => {
+        target.disabled = false
+        if(userAnswersFlow.length < 1) isBackBtnActive.value = false
+    }, 500);
 }
 
 /*
@@ -249,7 +253,7 @@ const carouselForeword = (answered, currentSlide) => {
     let slideValue = 0 // カルーセルの移動量
     if ((answered.questionId === 1 && answered.answerId === 2) || answered.questionId === 3) {
         slideValue = 3
-    } else if (answered.questionId === 4 && answered.answerId === 2) {
+    } else if (answered.questionId === 4 && answered.answerId === 1) {
         slideValue = 2
     } else {
         slideValue = 1
@@ -371,9 +375,8 @@ const encode = (str) => {
     background-color: #f265b07b;
     border: 2px solid #ff50ad;
 }
-.notAnswered,
-.disabled {
-    opacity: 0.5;
+.notAnswered {
+    opacity: 0.6;
 }
 .answered-text {
     font-weight: bold;

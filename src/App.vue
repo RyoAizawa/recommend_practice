@@ -30,11 +30,12 @@ button:focus {
     outline: none;
 }
 button:hover {
-    opacity: 0.7;
+    opacity: 0.6;
 }
 small {
     font-size: 1rem;
 }
+
 .container {
     width: 900px;
     margin: 30px auto;
@@ -64,6 +65,9 @@ small {
     background-color: #aaa;
     font-size: 1.4rem;
     border-radius: 20px;
+}
+.disabled {
+    opacity: 0.6;
 }
 /*--------------------
     料金診断領域

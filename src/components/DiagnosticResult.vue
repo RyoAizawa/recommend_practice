@@ -4,26 +4,125 @@ import RecommendArea from "./RecommendArea";
 const props = defineProps(["userAnswers", "lastBtnChecked"])
 
 const breakdownBtnClick = () => {
-    console.log(props)
     document.querySelector(".result-breakdownArea").classList.toggle("hide")
 }
 
-let diagnosticResult = reactive({
+const result = reactive({
     id: 0,
     lines: 0,
-    dataVolume: 0,
-    totalPrice: 0,
+    sim: "",
     plan: "",
     planPrice: 0,
+    dataVolume: 0,
     option: "",
     optionPrice: 0,
+    totalPrice: 0,
 })
 
+const getLastBtnChecked = () => {
+    return props.lastBtnChecked
+}
+watch(getLastBtnChecked, () => {
+    result.id++
+    result.lines++
+})
 watch(props.userAnswers, () => {
     if (props.lastBtnChecked) {
-        console.log("hey")
+        let voice = false
+        let sms = false
+        Object.values(props.userAnswers).forEach((elem) => {
+            if (elem.questionId === 1) {
+                if (elem.answerId === 1) {
+                    result.sim = "音声SIM"
+                    voice = true
+                } else {
+                    voice = false
+                }
+            }
+            // 通話ありが選択された
+            if (voice) {
+                if (elem.questionId === 2 && elem.answerId === 2) {
+                    result.sim = "音声eSIM"
+                }
+                if (elem.questionId === 3) {
+                    if (elem.answerId === 1) {
+                        result.option = "通話定額5分＋"
+                        result.optionPrice = 90
+                    }
+                    else if (elem.answerId === 2) {
+                        result.option = "通話定額10分＋"
+                        result.optionPrice = 290
+                    }
+                    else if (elem.answerId === 3) {
+                        result.option = "かけ放題＋"
+                        result.optionPrice = 990
+                    }
+                    else result.option = ""
+                }
+            // 通話なしが選択された
+            } else {
+                if (elem.questionId === 4)
+                    if (elem.answerId === 1) {
+                        result.sim = "SMS"
+                        sms = true
+                    } else {
+                        sms = false
+                    }
+                // smsなしが選択された
+                if (!sms) {
+                    if (elem.questionId === 5 && elem.answerId === 1) {
+                        result.sim = "データeSIM"
+                    } else if (elem.questionId === 5 && elem.answerId === 2) {
+                        result.sim = "データ"
+                    }
+                }
+            }
+            if (elem.questionId === 6) {
+                if (elem.answerId === 1) result.dataVolume = 2
+                else if (elem.answerId === 2) result.dataVolume = 5
+                else if (elem.answerId === 3) result.dataVolume = 10
+                else if (elem.answerId === 4) result.dataVolume = 15
+                else if (elem.answerId === 5) result.dataVolume = 20
+            }
+        })
+        console.log(result)
+        calcPlanAndTotalPrice()
     }
 })
+
+const calcPlanAndTotalPrice = () => {
+    result.plan = `${result.sim}${result.dataVolume}ギガプラン`
+    switch (result.plan) {
+        case "音声SIM2ギガプラン":     result.planPrice = 850;  break
+        case "音声SIM5ギガプラン":     result.planPrice = 990;  break
+        case "音声SIM10ギガプラン":    result.planPrice = 1500; break
+        case "音声SIM15ギガプラン":    result.planPrice = 1800; break
+        case "音声SIM20ギガプラン":    result.planPrice = 2000; break
+        case "音声eSIM2ギガプラン":    result.planPrice = 850;  break
+        case "音声eSIM5ギガプラン":    result.planPrice = 990;  break
+        case "音声eSIM10ギガプラン":   result.planPrice = 1500; break
+        case "音声eSIM15ギガプラン":   result.planPrice = 1800; break
+        case "音声eSIM20ギガプラン":   result.planPrice = 2000; break
+        case "SMS2ギガプラン":         result.planPrice = 820;  break
+        case "SMS5ギガプラン":         result.planPrice = 920;  break
+        case "SMS10ギガプラン":        result.planPrice = 1470; break
+        case "SMS15ギガプラン":        result.planPrice = 1780; break
+        case "SMS20ギガプラン":        result.planPrice = 1980; break
+        case "データeSIM2ギガプラン":  result.planPrice = 440;  break
+        case "データeSIM5ギガプラン":  result.planPrice = 660;  break
+        case "データeSIM10ギガプラン": result.planPrice = 1100; break
+        case "データeSIM15ギガプラン": result.planPrice = 1430; break
+        case "データeSIM20ギガプラン": result.planPrice = 1650; break
+        case "データ2ギガプラン":      result.planPrice = 740;  break
+        case "データ5ギガプラン":      result.planPrice = 900;  break
+        case "データ10ギガプラン":     result.planPrice = 1400; break
+        case "データ15ギガプラン":     result.planPrice = 1730; break
+        case "データ20ギガプラン":     result.planPrice = 1950; break
+        default: break;
+    }
+    result.totalPrice = result.planPrice + result.optionPrice
+}
+
 
 </script>
 
@@ -40,21 +139,21 @@ watch(props.userAnswers, () => {
                 <div class="result-whiteArea">
                     <div class="result-firstArea">
                         <div>回線数
-                            <span v-if="diagnosticResult.lines < 1">-</span>
-                            <span v-else>{{ diagnosticResult.lines }}</span>
+                            <span v-if="result.lines < 1">-</span>
+                            <span v-else>{{ result.lines }}</span>
                             回線
                         </div>
                         <div>データ容量
-                            <span v-if="diagnosticResult.dataVolume < 1">-</span>
-                            <span v-else>{{ diagnosticResult.dataVolume }}</span>
+                            <span v-if="result.dataVolume < 1">-</span>
+                            <span v-else>{{ result.dataVolume }}</span>
                             GB
                         </div>
                         <div>月額
-                            <span v-if="diagnosticResult.totalPrice < 1">-</span>
-                            <span v-else>{{ diagnosticResult.totalPrice }}</span>
+                            <span v-if="result.totalPrice < 1">-</span>
+                            <span v-else>{{ result.totalPrice }}</span>
                             円
                         </div>
-                        <button class="yellowBtn breakdownBtn" @click="breakdownBtnClick">
+                        <button class="yellowBtn breakdownBtn" @click="breakdownBtnClick" :class="{ disabled: !props.lastBtnChecked }" :disabled="!props.lastBtnChecked">
                             <i class="fa fa-angle-down" aria-hidden="true"></i>内訳
                         </button>
                     </div>
@@ -68,14 +167,16 @@ watch(props.userAnswers, () => {
                                 <div class="result-breakdown-item">
                                     <div class="result-plan">
                                         <div class="result-plan-numLabel">
-                                            <span class="yellowBlockNumber">{{ diagnosticResult.id }}</span>
+                                            <span class="yellowBlockNumber">{{ result.id }}</span>
                                         </div>
                                         <div class="result-plan-price">
-                                            <div>{{ diagnosticResult.plan }}
-                                                <div class="result-price"><span>{{ diagnosticResult.planPrice }}</span>円</div>
+                                            <div>
+                                                {{ result.plan }}
+                                                <div class="result-price"><span>{{ result.planPrice }}</span>円</div>
                                             </div>
-                                            <div class="option" v-if="diagnosticResult.option !== ''">{{ diagnosticResult.option }}
-                                                <div class="result-price"><span>{{ diagnosticResult.optionPrice }}</span>円</div>
+                                            <div v-if="(result.sim === '音声SIM' || result.sim === '音声eSIM' ) && result.option !== ''" class="option" >
+                                                {{ result.option }}
+                                                <div class="result-price"><span>{{ result.optionPrice }}</span>円</div>
                                             </div>
                                         </div>
                                         <div class="result-deleteBtnArea">
@@ -92,7 +193,13 @@ watch(props.userAnswers, () => {
         </div>
     </div>
     <!-- おすすめプラン表示 -->
-    <RecommendArea v-if="props.lastBtnChecked"></RecommendArea>
+    <div v-if="props.lastBtnChecked" class="recommend">
+        <h3>あなたに最適なプランはこれ！</h3>
+        <button class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>診断結果をすべて削除</button>
+        <RecommendArea :result="result"></RecommendArea>
+        <button class="recommend-addBtn yellowBtn"><i class="fa fa-plus" aria-hidden="true"></i>2人目を診断する</button>
+        <button class="recommend-buyBtn"><i class="fa fa-chevron-right" aria-hidden="true"></i>ご購入・お申し込みはこちら</button>
+    </div>
 </template>
 
 <style scoped>
@@ -220,5 +327,41 @@ watch(props.userAnswers, () => {
     align-items: center;
     width: 20%;
     background-color: #fff;
+}
+/*--------------------
+    おすすめプラン表示領域
+--------------------*/
+
+.recommend {
+    position: relative;
+    background-color: #f2eacc;
+    border: 1px solid #ab8a11;
+}
+.recommend>h3 {
+    text-align: center;
+    padding: 20px;
+}
+.recommend>.deleteBtn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+.recommend-addBtn {
+    display: block;
+    margin: 20px auto;
+}
+.recommend-buyBtn {
+    display: block;
+    margin: 20px auto;
+    padding: 15px 30px;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 2px 2px #437c3d;
+    background: linear-gradient(-20deg, #529d34 0%, #a8ff66 100%);
+}
+.fa-chevron-right {
+    margin-right: 40px;
 }
 </style>
