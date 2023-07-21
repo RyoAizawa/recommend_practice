@@ -25,8 +25,6 @@ watch(props.userAnswers, () => {
     }
 })
 
-
-
 </script>
 
 
