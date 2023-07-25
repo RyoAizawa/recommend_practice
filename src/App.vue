@@ -66,9 +66,11 @@ small {
     font-size: 1.4rem;
     border-radius: 20px;
 }
-.disabled {
-    opacity: 0.6;
+.disabled,
+.disabled:hover {
+    opacity: 0.4;
 }
+
 /*--------------------
     料金診断領域
 --------------------*/

@@ -1,16 +1,16 @@
 <script setup>
-import { reactive, watch } from 'vue'
+import { reactive, watch, defineEmits } from 'vue'
 import RecommendArea from "./RecommendArea";
+import BreakDownItem from "./BreakDownItem";
+/*---------------------------
+    データ
+---------------------------*/
 const props = defineProps(["userAnswers", "lastBtnChecked"])
-
-const breakdownBtnClick = () => {
-    document.querySelector(".result-breakdownArea").classList.toggle("hide")
-}
-
 const result = reactive({
     id: 0,
     lines: 0,
     sim: "",
+    simIconSrc: "",
     plan: "",
     planPrice: 0,
     dataVolume: 0,
@@ -18,15 +18,18 @@ const result = reactive({
     optionPrice: 0,
     totalPrice: 0,
 })
+const resultArray = reactive([])
 
+/*---------------------------
+    メソッド
+---------------------------*/
+const breakdownBtnClick = () => {
+    document.querySelector(".result-breakdownArea").classList.toggle("hide")
+}
 const getLastBtnChecked = () => {
     return props.lastBtnChecked
 }
-watch(getLastBtnChecked, () => {
-    result.id++
-    result.lines++
-})
-watch(props.userAnswers, () => {
+const setResultData = () => {
     if (props.lastBtnChecked) {
         let voice = false
         let sms = false
@@ -34,6 +37,7 @@ watch(props.userAnswers, () => {
             if (elem.questionId === 1) {
                 if (elem.answerId === 1) {
                     result.sim = "音声SIM"
+                    result.simIconSrc = require("../assets/img/voiceSIM.png")
                     voice = true
                 } else {
                     voice = false
@@ -43,18 +47,19 @@ watch(props.userAnswers, () => {
             if (voice) {
                 if (elem.questionId === 2 && elem.answerId === 2) {
                     result.sim = "音声eSIM"
+                    result.simIconSrc = require("../assets/img/voiceeSIM.png")
                 }
                 if (elem.questionId === 3) {
                     if (elem.answerId === 1) {
-                        result.option = "通話定額5分＋"
+                        result.option = "5分"
                         result.optionPrice = 90
                     }
                     else if (elem.answerId === 2) {
-                        result.option = "通話定額10分＋"
+                        result.option = "10分"
                         result.optionPrice = 290
                     }
                     else if (elem.answerId === 3) {
-                        result.option = "かけ放題＋"
+                        result.option = "かけ放題"
                         result.optionPrice = 990
                     }
                     else result.option = ""
@@ -64,6 +69,7 @@ watch(props.userAnswers, () => {
                 if (elem.questionId === 4)
                     if (elem.answerId === 1) {
                         result.sim = "SMS"
+                        result.simIconSrc = require("../assets/img/SMS.png")
                         sms = true
                     } else {
                         sms = false
@@ -72,8 +78,10 @@ watch(props.userAnswers, () => {
                 if (!sms) {
                     if (elem.questionId === 5 && elem.answerId === 1) {
                         result.sim = "データeSIM"
+                        result.simIconSrc = require("../assets/img/dataeSIM.png")
                     } else if (elem.questionId === 5 && elem.answerId === 2) {
                         result.sim = "データ"
+                        result.simIconSrc = require("../assets/img/data.png")
                     }
                 }
             }
@@ -85,11 +93,9 @@ watch(props.userAnswers, () => {
                 else if (elem.answerId === 5) result.dataVolume = 20
             }
         })
-        console.log(result)
         calcPlanAndTotalPrice()
     }
-})
-
+}
 const calcPlanAndTotalPrice = () => {
     result.plan = `${result.sim}${result.dataVolume}ギガプラン`
     switch (result.plan) {
@@ -122,10 +128,32 @@ const calcPlanAndTotalPrice = () => {
     }
     result.totalPrice = result.planPrice + result.optionPrice
 }
+watch(getLastBtnChecked, () => {
+    if (getLastBtnChecked()) {
+        result.id++
+        result.lines++
+        setResultData()
+    }
+})
+watch(props.userAnswers, () => {
+    setResultData()
+})
 
+const emit = defineEmits(["init"])
+const addUser = () => {
+    resultArray.unshift(Object.assign({},result))
+    console.log(resultArray)
+    emit("init");
+}
+// const deleteUser = (target) => {
+//     resultArray.splice(target, 1)
+//     emit("init");
+// }
+// const deleteAllUser = () => {
+//     emit("init");
+// }
 
 </script>
-
 
 <template>
     <div class="result-area">
@@ -164,26 +192,8 @@ const calcPlanAndTotalPrice = () => {
                                 内訳
                             </div>
                             <div class="result-breakdown-items">
-                                <div class="result-breakdown-item">
-                                    <div class="result-plan">
-                                        <div class="result-plan-numLabel">
-                                            <span class="yellowBlockNumber">{{ result.id }}</span>
-                                        </div>
-                                        <div class="result-plan-price">
-                                            <div>
-                                                {{ result.plan }}
-                                                <div class="result-price"><span>{{ result.planPrice }}</span>円</div>
-                                            </div>
-                                            <div v-if="(result.sim === '音声SIM' || result.sim === '音声eSIM' ) && result.option !== ''" class="option" >
-                                                {{ result.option }}
-                                                <div class="result-price"><span>{{ result.optionPrice }}</span>円</div>
-                                            </div>
-                                        </div>
-                                        <div class="result-deleteBtnArea">
-                                            <button class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>削除</button>
-                                        </div>
-                                    </div>
-                                </div>
+                                <BreakDownItem v-if="getLastBtnChecked()" :result="result" />
+                                <BreakDownItem v-for="resultItem of resultArray" :key="resultItem.id" :result="resultItem" />
                             </div>
                         </div>
                     </div>
@@ -193,11 +203,12 @@ const calcPlanAndTotalPrice = () => {
         </div>
     </div>
     <!-- おすすめプラン表示 -->
-    <div v-if="props.lastBtnChecked" class="recommend">
+    <div v-if="resultArray.length > 0 || getLastBtnChecked()" class="recommend">
         <h3>あなたに最適なプランはこれ！</h3>
-        <button class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>診断結果をすべて削除</button>
-        <RecommendArea :result="result"></RecommendArea>
-        <button class="recommend-addBtn yellowBtn"><i class="fa fa-plus" aria-hidden="true"></i>2人目を診断する</button>
+        <button @click="deleteAllUser"  class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>診断結果をすべて削除</button>
+        <RecommendArea v-if="getLastBtnChecked()" :result="result"></RecommendArea>
+        <RecommendArea v-for="resultItem of resultArray" :key="resultItem.id" :result="resultItem"></RecommendArea>
+        <button @click="addUser" class="recommend-addBtn yellowBtn"><i class="fa fa-plus" aria-hidden="true"></i>{{ result.id + 1 }}人目を診断する</button>
         <button class="recommend-buyBtn"><i class="fa fa-chevron-right" aria-hidden="true"></i>ご購入・お申し込みはこちら</button>
     </div>
 </template>
@@ -251,13 +262,17 @@ const calcPlanAndTotalPrice = () => {
     display: flex;
 }
 .result-firstArea div {
-    padding: 10px;
+    font-size: 1.8rem;
+    padding: 0 10px;
     margin: 10px;
-    width: 25%;
+    width: 27%;
 }
 .result-firstArea div:nth-of-type(2),
 .result-firstArea div:nth-of-type(3) {
     border-left: 1px solid #333;
+}
+.result-firstArea span {
+    font-size: 2.8rem;
 }
 .breakdownBtn {
     position: absolute;
@@ -265,7 +280,9 @@ const calcPlanAndTotalPrice = () => {
     right: 20px;
 }
 
-/* 内訳 */
+/*--------------------
+    内訳
+--------------------*/
 .result-breakdownArea {
     padding: 15px;
 }
@@ -293,45 +310,10 @@ const calcPlanAndTotalPrice = () => {
 .result-breakdown-items {
     width: 100%;
 }
-.result-breakdown-item ~ .result-breakdown-item {
-    border-top: 1px solid #ab8a11;
-}
-.result-plan {
-    display: flex;
-    background: #e8e4da;
-    width: 100%;
-}
-.result-plan-numLabel {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: normal;
-    width: 10%;
-}
-.result-plan-price {
-    width: 90%;
-}
-.result-plan-price > div {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 5px;
-    background-color: #fff;
-}
-.option {
-    border-top: 1px dotted #333;
-}
 
-.result-deleteBtnArea {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 20%;
-    background-color: #fff;
-}
 /*--------------------
     おすすめプラン表示領域
 --------------------*/
-
 .recommend {
     position: relative;
     background-color: #f2eacc;

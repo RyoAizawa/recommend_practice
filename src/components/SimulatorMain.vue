@@ -272,6 +272,32 @@ const encode = (str) => {
     }
     return str
 }
+
+const initialize = () => {
+    const target = document.querySelector(".simulator-main");
+    autoScroll(target)
+    myCarousel.value.slideTo(0);
+    userAnswers.splice(0)
+    userAnswersFlow.splice(0)
+    isBackBtnActive.value = false
+    isLastBtnChecked.value = false
+    // console.log(isLastBtnChecked.value)
+
+    const answerBtnAll = document.querySelectorAll(".simulator-answerBtn")
+    answerBtnAll.forEach((elem) => {
+        elem.classList.remove("answered", "notAnswered")
+    })
+}
+
+const autoScroll = (target) => {
+    let rect = target.getBoundingClientRect();
+    // 要素の頂点の高さを設定
+    let position = rect.top + scrollY;
+    setTimeout(() => {
+        scroll(0, position);
+    }, 200);
+}
+
 </script>
 
 <template>
@@ -308,7 +334,7 @@ const encode = (str) => {
     </p>
 </div>
 <!-- 診断結果 -->
-<DiagnosticResult :userAnswers="userAnswers" :lastBtnChecked="isLastBtnChecked"></DiagnosticResult>
+<DiagnosticResult @init="initialize" :userAnswers="userAnswers" :lastBtnChecked="isLastBtnChecked"></DiagnosticResult>
 
 </template>
 
