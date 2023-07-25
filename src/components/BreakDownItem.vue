@@ -1,5 +1,18 @@
 <script setup>
 const props = defineProps(["result"])
+
+const emit = defineEmits(["deleteItem"])
+const deleteItem = (target) => {
+    const deleteBtnAll = document.querySelectorAll(".deleteBtn")
+    let deleteBtnIndex = 0;
+    deleteBtnAll.forEach((deleteBtn, index) => {
+        if (deleteBtn === target) {
+            deleteBtnIndex = index
+        }
+    })
+    emit("deleteItem", deleteBtnIndex)
+}
+
 </script>
 
 <template>
@@ -11,15 +24,15 @@ const props = defineProps(["result"])
             <div class="result-plan-price">
                 <div>
                     {{ props.result.plan }}
-                    <div class="result-price"><span>{{ props.result.planPrice }}</span>円</div>
+                    <div class="result-price"><span>{{ props.result.planPrice.toLocaleString() }}</span>円</div>
                 </div>
                 <div v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && props.result.option !== ''" class="option" >
                     通話定額{{ props.result.option }}+
-                    <div class="result-price"><span>{{ props.result.optionPrice }}</span>円</div>
+                    <div class="result-price"><span>{{ props.result.optionPrice.toLocaleString() }}</span>円</div>
                 </div>
             </div>
             <div class="result-deleteBtnArea">
-                <button @click="deleteUser($event.currentTarget)" class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>削除</button>
+                <button @click="deleteItem($event.currentTarget)" class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>削除</button>
             </div>
         </div>
     </div>
@@ -28,7 +41,6 @@ const props = defineProps(["result"])
 
 <style scoped>
 /* 内訳 */
-
 .result-breakdown-item ~ .result-breakdown-item {
     border-top: 1px solid #ab8a11;
 }

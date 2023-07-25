@@ -26,11 +26,14 @@ watch(props, () => {
 })
 
 const setRecommendData = () => {
+    const recommendSim = document.querySelector(".recommend-SIM")
+    recommendSim.classList.remove("voiceSIM","SMS","dataeSIM","data")
     // 音声eSIMは2ギガプランの場合のみ文言が異なる
     if (props.result.sim === "音声eSIM" && props.result.dataVolume === 2) {
         recommend.text = "別キャリアの回線を持ちたい方"
         recommend.text2 = "万が一に備えて、スマホ1台で2回線持ちたい方"
         recommend.imgSrc = require("../assets/img/recommend_eSIM_2G.png")
+        recommendSim.classList.add("voiceSIM")
     } else if (props.result.sim === "音声SIM" || props.result.sim === "音声eSIM") {
         switch (props.result.dataVolume) {
             case 2:
@@ -60,6 +63,37 @@ const setRecommendData = () => {
                 break;
             default: break;
         }
+        recommendSim.classList.add("voiceSIM")
+    } else if (props.result.sim === "SMS") {
+        switch (props.result.dataVolume) {
+            case 2:
+                recommend.text = "お子様のタブレットをお得に使い始めたい方"
+                recommend.text2 = "メールやカンタンな調べ物が中心でお得に使いたい方"
+                recommend.imgSrc = require("../assets/img/recommend_SMS_2G.png")
+                break;
+            case 5:
+                recommend.text = "日常の連絡はSMSが中心で通話は行わない方"
+                recommend.text2 = "ネットやSNS利用が中心の方"
+                recommend.imgSrc = require("../assets/img/recommend_SMS_5G.png")
+                break;
+            case 10:
+                recommend.text = "音声通話は使わずデータ容量にゆとりを持ちたい方"
+                recommend.text2 = "ネットでの調べ物やゲームなどをよく使われる方"
+                recommend.imgSrc = require("../assets/img/recommend_SMS_10G.png")
+                break;
+            case 15:
+                recommend.text = "外出先などで動画視聴やゲームをする機会が多い方"
+                recommend.text2 = "ゲームやSNSなど、電話番号認証を利用されたい方"
+                recommend.imgSrc = require("../assets/img/recommend_SMS_15G.png")
+                break;
+            case 20:
+                recommend.text = "データ容量を気にせず動画視聴やゲームを楽しむ方"
+                recommend.text2 = "SNSやゲームなどの認証をスムーズに行いたい方"
+                recommend.imgSrc = require("../assets/img/recommend_SMS_20G.png")
+                break;
+            default: break;
+        }
+        recommendSim.classList.add("SMS")
     } else if (props.result.sim === "データeSIM") {
         switch (props.result.dataVolume) {
             case 2:
@@ -89,6 +123,7 @@ const setRecommendData = () => {
                 break;
             default: break;
         }
+        recommendSim.classList.add("dataeSIM")
     } else if (props.result.sim === "データ") {
         switch (props.result.dataVolume) {
             case 2:
@@ -118,6 +153,7 @@ const setRecommendData = () => {
                 break;
             default: break;
         }
+        recommendSim.classList.add("data")
     }
     // データの目安をセット(データ量*1GBあたりの目安)
     recommend.homePage = props.result.dataVolume * 3410
@@ -147,10 +183,10 @@ const setRecommendData = () => {
             <p>内訳</p>
             <div class="recommend-plan-price">
                 <div>
-                    {{ props.result.plan }}<div class="result-price">税込<span>{{ props.result.planPrice }}</span>円</div>
+                    {{ props.result.plan }}<div class="result-price">税込<span>{{ props.result.planPrice.toLocaleString() }}</span>円</div>
                 </div>
                 <div v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && props.result.option !== ''">
-                    定額通話{{ props.result.option }}+<div class="result-price">税込<span>{{ props.result.optionPrice }}</span>円</div>
+                    定額通話{{ props.result.option }}+<div class="result-price">税込<span>{{ props.result.optionPrice.toLocaleString()  }}</span>円</div>
                 </div>
             </div>
         </div>
@@ -174,7 +210,6 @@ const setRecommendData = () => {
 /*--------------------
     おすすめプラン表示
 --------------------*/
-
 .recommend-item {
     background-color: #fff;
     width: 96%;
@@ -207,8 +242,11 @@ const setRecommendData = () => {
     width: 25%;
     font-size: 2.6rem;
     font-weight: bold;
-    color: #c929b1;
 }
+.voiceSIM {color: #c929b1;}
+.dataeSIM {color: #29c9c6;}
+.data {color: #2946c9;}
+.SMS {color: #29c92c;}
 .recommend-GB {
     width: 15%;
     text-align: right;
@@ -249,6 +287,10 @@ const setRecommendData = () => {
     padding: 10px 15px 10px 0;
     border-right: 1px solid #888;
 }
+.recommend-breakdown>p {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
 .recommend-plan-price {
     border-top: 1px solid #888;
     border-bottom: 1px solid #888;
@@ -256,10 +298,21 @@ const setRecommendData = () => {
 .recommend-plan-price>div {
     display: flex;
     justify-content: space-between;
-    padding: 5px;
+    align-items: center;
+    font-size: 1.8rem;
+    padding: 10px;
+}
+.recommend-plan-price>div:first-child {
+    font-weight: bold;
 }
 .recommend-plan-price>div~div {
     border-top: 1px dotted #888;
+}
+.result-price {
+    font-weight: normal;
+}
+.result-price>span {
+    font-size: 2.4rem;
 }
 .recommend-detail {
     width: 45%;

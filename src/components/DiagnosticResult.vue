@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch, defineEmits } from 'vue'
+import { reactive, watch, defineEmits, computed } from 'vue'
 import RecommendArea from "./RecommendArea";
 import BreakDownItem from "./BreakDownItem";
 /*---------------------------
@@ -19,7 +19,14 @@ const result = reactive({
     totalPrice: 0,
 })
 const resultArray = reactive([])
-
+const reverseResultArray = computed(() => {
+    return resultArray.slice().reverse()
+})
+const count = computed(() => {
+    let now = 0
+    if(props.lastBtnChecked) now = 1
+    return resultArray.length + 1 + now
+})
 /*---------------------------
     メソッド
 ---------------------------*/
@@ -129,9 +136,9 @@ const calcPlanAndTotalPrice = () => {
     result.totalPrice = result.planPrice + result.optionPrice
 }
 watch(getLastBtnChecked, () => {
-    if (getLastBtnChecked()) {
-        result.id++
-        result.lines++
+    if (props.lastBtnChecked) {
+        result.id = resultArray.length + 1
+        result.lines = resultArray.length + 1
         setResultData()
     }
 })
@@ -140,18 +147,40 @@ watch(props.userAnswers, () => {
 })
 
 const emit = defineEmits(["init"])
-const addUser = () => {
-    resultArray.unshift(Object.assign({},result))
-    console.log(resultArray)
+const addItem = () => {
+    if (props.lastBtnChecked) {
+        resultArray.push(Object.assign({},result))
+    }
     emit("init");
 }
-// const deleteUser = (target) => {
-//     resultArray.splice(target, 1)
-//     emit("init");
-// }
-// const deleteAllUser = () => {
-//     emit("init");
-// }
+const deleteItemNow = () => {
+    initialize()
+    emit("init");
+}
+const deleteItem = (target) => {
+    resultArray.splice(target, 1)
+    resultArray.forEach((elem) => {
+        if(elem.id > target) elem.id--
+    })
+    result.id--
+}
+const deleteAllItem = () => {
+    initialize()
+    resultArray.splice(0)
+    emit("init");
+}
+const initialize = () => {
+    result.id = 0
+    result.lines = 0
+    result.sim = ""
+    result.simIconSrc = ""
+    result.plan = ""
+    result.planPrice = 0
+    result.dataVolume = 0
+    result.option = ""
+    result.optionPrice = 0
+    result.totalPrice = 0
+}
 
 </script>
 
@@ -178,22 +207,25 @@ const addUser = () => {
                         </div>
                         <div>月額
                             <span v-if="result.totalPrice < 1">-</span>
-                            <span v-else>{{ result.totalPrice }}</span>
+                            <span v-else>{{ result.totalPrice.toLocaleString()  }}</span>
                             円
                         </div>
-                        <button class="yellowBtn breakdownBtn" @click="breakdownBtnClick" :class="{ disabled: !props.lastBtnChecked }" :disabled="!props.lastBtnChecked">
+                        <button class="yellowBtn breakdownBtn"
+                        @click="breakdownBtnClick"
+                        :class="{disabled: !props.lastBtnChecked && !resultArray.length > 0}"
+                        :disabled=" !props.lastBtnChecked && !resultArray.length > 0">
                             <i class="fa fa-angle-down" aria-hidden="true"></i>内訳
                         </button>
                     </div>
                     <!-- 内訳を押すと出力 -->
-                    <div class="result-breakdownArea hide">
+                    <div v-if="resultArray.length > 0 || props.lastBtnChecked" class="result-breakdownArea hide">
                         <div class="result-breakdownTable">
                             <div class="result-breakdown-label">
                                 内訳
                             </div>
                             <div class="result-breakdown-items">
-                                <BreakDownItem v-if="getLastBtnChecked()" :result="result" />
-                                <BreakDownItem v-for="resultItem of resultArray" :key="resultItem.id" :result="resultItem" />
+                                <BreakDownItem v-if="props.lastBtnChecked" :result="result" @deleteItem="deleteItemNow" />
+                                <BreakDownItem v-for="resultItem of reverseResultArray" :key="resultItem.id" :result="resultItem" @deleteItem="deleteItem" />
                             </div>
                         </div>
                     </div>
@@ -203,12 +235,17 @@ const addUser = () => {
         </div>
     </div>
     <!-- おすすめプラン表示 -->
-    <div v-if="resultArray.length > 0 || getLastBtnChecked()" class="recommend">
+    <div v-if="resultArray.length > 0 || props.lastBtnChecked" class="recommend">
         <h3>あなたに最適なプランはこれ！</h3>
-        <button @click="deleteAllUser"  class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>診断結果をすべて削除</button>
-        <RecommendArea v-if="getLastBtnChecked()" :result="result"></RecommendArea>
-        <RecommendArea v-for="resultItem of resultArray" :key="resultItem.id" :result="resultItem"></RecommendArea>
-        <button @click="addUser" class="recommend-addBtn yellowBtn"><i class="fa fa-plus" aria-hidden="true"></i>{{ result.id + 1 }}人目を診断する</button>
+        <button @click="deleteAllItem"  class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>診断結果をすべて削除</button>
+        <RecommendArea v-if="props.lastBtnChecked" :result="result"></RecommendArea>
+        <RecommendArea v-for="resultItem of reverseResultArray" :key="resultItem.id" :result="resultItem"></RecommendArea>
+        <button
+            @click="addItem"
+            class="recommend-addBtn yellowBtn">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            {{ count }}人目を診断する
+        </button>
         <button class="recommend-buyBtn"><i class="fa fa-chevron-right" aria-hidden="true"></i>ご購入・お申し込みはこちら</button>
     </div>
 </template>

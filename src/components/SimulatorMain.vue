@@ -42,7 +42,9 @@ const questionArray = [
                 mainText: `eSIM*`,
             }
         ],
-        // desc: "※eSIMご利用にはeSIM対応機種が必要です。未対応の場合はご利用できませんので、「SIMカード」を選択してください。",
+        desc: "※eSIMご利用にはeSIM対応機種が必要です。",
+        subDesc: "未対応の場合はご利用できませんので、「SIMカード」を選択してください。",
+        descLink: require("../assets/img/descLink_eSIM.png"),
     },
     {
         id: 3,
@@ -112,7 +114,8 @@ const questionArray = [
                 image: require("../assets/img/5-2.png"),
                 mainText: `データeSMSは使わない`,
             },
-        ]
+        ],
+        descLink: require("../assets/img/descLink_dataeSIM.png"),
     },
     {
         id: 6,
@@ -153,6 +156,7 @@ const userAnswers = reactive([])     // ユーザーが選択した回答を格�
 const userAnswersFlow = reactive([]) // カルーセルの移動用にユーザーが選択したデータの順番を保持
 let isLastBtnChecked = ref(false)    // ユーザーが最後（6番目）の選択肢を選択したか判定
 const isBackBtnActive = ref(false)   // 前の設問にもどるボタンがアクティブか判定
+Carousel.props.mouseDrag = false
 /*---------------------------
     メソッド
 ---------------------------*/
@@ -258,6 +262,7 @@ const carouselForeword = (answered, currentSlide) => {
     } else {
         slideValue = 1
     }
+
     // 現在の位置から指定したページ分進める
     myCarousel.value.slideTo((currentSlide.currentSlide + slideValue));
     if (currentSlide.currentSlide < 5) userAnswersFlow.push(answered)
@@ -281,7 +286,6 @@ const initialize = () => {
     userAnswersFlow.splice(0)
     isBackBtnActive.value = false
     isLastBtnChecked.value = false
-    // console.log(isLastBtnChecked.value)
 
     const answerBtnAll = document.querySelectorAll(".simulator-answerBtn")
     answerBtnAll.forEach((elem) => {
@@ -322,7 +326,11 @@ const autoScroll = (target) => {
                         <div v-if="answer.price"        class="answerBtn-price">{{ answer.price }}</div>
                         <div v-if="answer.bandMsg"      class="answerBtn-bandMsg">{{ answer.bandMsg }}</div>
                     </div>
-                    <!-- <div v-if="question.desc">{{ question.desc }}</div> -->
+                </div>
+                <div class="simulator-answer-subarea">
+                    <div v-if="question.desc"     class="simulator-question_desc">{{ question.desc }}</div>
+                    <div v-if="question.subDesc"  class="simulator-question_subDesc">{{ question.subDesc }}</div>
+                    <div v-if="question.descLink" class="simulator-question_descLink"><a href="#"><img :src="question.descLink"></a></div>
                 </div>
             </div>
         </slide>
@@ -345,7 +353,8 @@ const autoScroll = (target) => {
     text-align: center;
 }
 .simulator-question {
-    font-size: 2.0rem;
+    font-size: 2.4rem;
+    margin-bottom: 30px;
 }
 .simulator-question span {
     display: inline-block;
@@ -357,10 +366,7 @@ const autoScroll = (target) => {
 .simulator-answer-area {
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: 20px;
-    height: 200px;
-    cursor: pointer;
 }
 .simulator-answerBtn {
     position: relative;
@@ -368,8 +374,9 @@ const autoScroll = (target) => {
     height: 180px;
     width: 200px;
     border-radius: 8px;
-    background-color: #fafafa;
+    background-color: #f3f3f3;
     border: 2px solid #ccc;
+    cursor: pointer;
 }
 .answerBtn-Image {
     padding: 10px;
@@ -395,8 +402,26 @@ const autoScroll = (target) => {
 
 .answerBtn-price {
     font-size: 1.4rem;
-
 }
+.simulator-answer-subarea {
+    position: relative;
+    width: 50%;
+    text-align: left;
+    margin: 0 auto;
+}
+.simulator-question_desc {
+    font-size: 1.2rem;
+}
+.simulator-question_subDesc {
+    font-size: 1.2rem;
+    color: red;
+}
+.simulator-question_descLink {
+    position: absolute;
+    right: 0;
+    bottom: -40px;
+}
+
 .answered {
     background-color: #f265b07b;
     border: 2px solid #ff50ad;
@@ -423,7 +448,7 @@ const autoScroll = (target) => {
 
 .carousel__item {
     width: 100%;
-    height: 300px;
+    height: 350px;
 }
 .answerBtn-bandMsg {
     position: absolute;
