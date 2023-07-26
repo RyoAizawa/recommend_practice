@@ -6,11 +6,13 @@ const deleteItem = (target) => {
     const deleteBtnAll = document.querySelectorAll(".deleteBtn")
     let deleteBtnIndex = 0;
     deleteBtnAll.forEach((deleteBtn, index) => {
+        console.log(index)
         if (deleteBtn === target) {
             deleteBtnIndex = index
         }
     })
-    emit("deleteItem", deleteBtnIndex)
+    // resultArrayに保存済みの診断結果は現在シミュレート中の結果は含まないのでインデックスは-1する
+    emit("deleteItem", deleteBtnIndex - 1)
 }
 
 </script>
@@ -24,11 +26,13 @@ const deleteItem = (target) => {
             <div class="result-plan-price">
                 <div>
                     {{ props.result.plan }}
-                    <div class="result-price"><span>{{ props.result.planPrice.toLocaleString() }}</span>円</div>
+                    <div class="result-price">
+                    <span>{{ props.result.planPrice.toLocaleString() }}</span>円</div>
                 </div>
                 <div v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && props.result.option !== ''" class="option" >
                     通話定額{{ props.result.option }}+
-                    <div class="result-price"><span>{{ props.result.optionPrice.toLocaleString() }}</span>円</div>
+                    <div class="result-price">
+                    <span>{{ props.result.optionPrice.toLocaleString() }}</span>円</div>
                 </div>
             </div>
             <div class="result-deleteBtnArea">

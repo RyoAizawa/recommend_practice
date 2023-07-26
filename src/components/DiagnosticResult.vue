@@ -5,7 +5,7 @@ import BreakDownItem from "./BreakDownItem";
 /*---------------------------
     データ
 ---------------------------*/
-const props = defineProps(["userAnswers", "lastBtnChecked"])
+const props = defineProps(["userAnswers", "lastBtnChecked","autoScroll"])
 const result = reactive({
     id: 0,
     lines: 0,
@@ -27,6 +27,30 @@ const count = computed(() => {
     if(props.lastBtnChecked) now = 1
     return resultArray.length + 1 + now
 })
+const totalLines = computed(() => {
+    let now = 0
+    if(props.lastBtnChecked) now = 1
+    return resultArray.length + now
+})
+const totalDataVolume = computed(() => {
+    let now = 0
+    let total = 0
+    if(props.lastBtnChecked) now = result.dataVolume
+    resultArray.forEach((elem) => {
+        total += elem.dataVolume
+    })
+    return total + now
+})
+const totalPrice = computed(() => {
+    let now = 0
+    let total = 0
+    if(props.lastBtnChecked) now = result.planPrice + result.optionPrice
+    resultArray.forEach((elem) => {
+        total += elem.planPrice + elem.optionPrice
+    })
+    return total + now
+})
+
 /*---------------------------
     メソッド
 ---------------------------*/
@@ -137,6 +161,7 @@ const calcPlanAndTotalPrice = () => {
 }
 watch(getLastBtnChecked, () => {
     if (props.lastBtnChecked) {
+        props.autoScroll(document.querySelector(".result-area"))
         result.id = resultArray.length + 1
         result.lines = resultArray.length + 1
         setResultData()
@@ -196,18 +221,18 @@ const initialize = () => {
                 <div class="result-whiteArea">
                     <div class="result-firstArea">
                         <div>回線数
-                            <span v-if="result.lines < 1">-</span>
-                            <span v-else>{{ result.lines }}</span>
+                            <span v-if="totalLines < 1">-</span>
+                            <span v-else>{{ totalLines }}</span>
                             回線
                         </div>
                         <div>データ容量
-                            <span v-if="result.dataVolume < 1">-</span>
-                            <span v-else>{{ result.dataVolume }}</span>
+                            <span v-if="totalDataVolume < 1">-</span>
+                            <span v-else>{{ totalDataVolume }}</span>
                             GB
                         </div>
                         <div>月額
-                            <span v-if="result.totalPrice < 1">-</span>
-                            <span v-else>{{ result.totalPrice.toLocaleString()  }}</span>
+                            <span v-if="totalPrice < 1">-</span>
+                            <span v-else>{{ totalPrice.toLocaleString()  }}</span>
                             円
                         </div>
                         <button class="yellowBtn breakdownBtn"
@@ -325,8 +350,16 @@ const initialize = () => {
 }
 .hide {
     display: none;
-    animation-duration: 1.5s;
-    animation-name: fade-in;
+    animation: anim 1s;
+    }
+@keyframes anim {
+    0% {
+        transform: translateY(0px);
+    }
+
+    100% {
+        transform: translateY(300px);
+    }
 }
 
 .result-breakdownTable {
