@@ -1,11 +1,11 @@
 <script setup>
-import { reactive, watch, defineEmits, computed } from 'vue'
+import { ref, reactive, watch, defineEmits, computed } from 'vue'
 import RecommendArea from "./RecommendArea";
 import BreakDownItem from "./BreakDownItem";
 /*---------------------------
     データ
 ---------------------------*/
-const props = defineProps(["userAnswers", "lastBtnChecked","autoScroll"])
+const props = defineProps(["userAnswers", "lastBtnChecked", "autoScroll"])
 const result = reactive({
     id: 0,
     lines: 0,
@@ -16,7 +16,9 @@ const result = reactive({
     dataVolume: 0,
     option: "",
     optionPrice: 0,
+    campaignPrice: 0,
     totalPrice: 0,
+    campaign: false
 })
 const resultArray = reactive([])
 const reverseResultArray = computed(() => {
@@ -44,12 +46,13 @@ const totalDataVolume = computed(() => {
 const totalPrice = computed(() => {
     let now = 0
     let total = 0
-    if(props.lastBtnChecked) now = result.planPrice + result.optionPrice
+    if(props.lastBtnChecked) now = result.planPrice + result.campaignPrice
     resultArray.forEach((elem) => {
-        total += elem.planPrice + elem.optionPrice
+        total += elem.planPrice + elem.campaignPrice
     })
     return total + now
 })
+let campaignApply = ref(false)
 
 /*---------------------------
     メソッド
@@ -83,15 +86,21 @@ const setResultData = () => {
                 if (elem.questionId === 3) {
                     if (elem.answerId === 1) {
                         result.option = "5分"
-                        result.optionPrice = 90
+                        result.optionPrice = 500
+                        result.campaignPrice = 90
+                        result.campaign = true
                     }
                     else if (elem.answerId === 2) {
                         result.option = "10分"
-                        result.optionPrice = 290
+                        result.optionPrice = 700
+                        result.campaignPrice = 290
+                        result.campaign = true
                     }
                     else if (elem.answerId === 3) {
                         result.option = "かけ放題"
-                        result.optionPrice = 990
+                        result.optionPrice = 1400
+                        result.campaignPrice = 990
+                        result.campaign = true
                     }
                     else result.option = ""
                 }
@@ -157,7 +166,7 @@ const calcPlanAndTotalPrice = () => {
         case "データ20ギガプラン":     result.planPrice = 1950; break
         default: break;
     }
-    result.totalPrice = result.planPrice + result.optionPrice
+    result.totalPrice = result.planPrice + result.campaignPrice
 }
 watch(getLastBtnChecked, () => {
     if (props.lastBtnChecked) {
@@ -168,8 +177,23 @@ watch(getLastBtnChecked, () => {
     }
 })
 watch(props.userAnswers, () => {
+    result.option = ""
+    result.campaign = false
     setResultData()
+    checkCampaign()
 })
+
+const checkCampaign = () => {
+    campaignApply.value = false
+    if(result.option !== "") campaignApply.value  = true
+    resultArray.forEach((elem) => {
+        if(elem.option !== "") campaignApply.value = true
+    })
+    if (campaignApply.value) {
+        console.log(document.querySelector(".totalPrice"))
+    }
+
+}
 
 const emit = defineEmits(["init"])
 const addItem = () => {
@@ -180,6 +204,7 @@ const addItem = () => {
 }
 const deleteItemNow = () => {
     initialize()
+    checkCampaign()
     emit("init");
 }
 const deleteItem = (target) => {
@@ -188,9 +213,11 @@ const deleteItem = (target) => {
         if(elem.id > target) elem.id--
     })
     result.id--
+    checkCampaign()
 }
 const deleteAllItem = () => {
     initialize()
+    checkCampaign()
     resultArray.splice(0)
     emit("init");
 }
@@ -211,6 +238,7 @@ const initialize = () => {
 
 <template>
     <div class="result-area">
+        <div class="campaign">通話定額が6ヵ月間割引！さらに初期費用割引中（8/31まで）！</div>
         <h2>
             <i class="fa fa-file-text-o" aria-hidden="true"></i
             >診断結果
@@ -219,28 +247,40 @@ const initialize = () => {
             <p>診断結果<span>合計</span></p>
             <div class="result-calcArea-right">
                 <div class="result-whiteArea">
+                    <div v-if="campaignApply && (props.lastBtnChecked || resultArray.length > 0)" class="campaign-apply">キャンペーン適用で</div>
                     <div class="result-firstArea">
                         <div>回線数
-                            <span v-if="totalLines < 1">-</span>
-                            <span v-else>{{ totalLines }}</span>
-                            回線
+                            <div v-if="totalLines < 1">
+                                <span>-</span>回線
+                            </div>
+                            <div v-else>
+                                <span>{{ totalLines }}</span>回線
+                            </div>
                         </div>
                         <div>データ容量
-                            <span v-if="totalDataVolume < 1">-</span>
-                            <span v-else>{{ totalDataVolume }}</span>
-                            GB
+                            <div v-if="totalDataVolume < 1">
+                                <span>-</span>GB
+                            </div>
+                            <div v-else>
+                                <span>{{ totalDataVolume }}</span>GB
+                            </div>
                         </div>
                         <div>月額
-                            <span v-if="totalPrice < 1">-</span>
-                            <span v-else>{{ totalPrice.toLocaleString()  }}</span>
-                            円
+                            <div v-if="totalPrice < 1">
+                                <span>-</span>円
+                            </div>
+                            <div v-else :class="{ campaignPrice : campaignApply }">
+                                <span>{{ totalPrice.toLocaleString() }}</span>円
+                            </div>
                         </div>
-                        <button class="yellowBtn breakdownBtn"
-                        @click="breakdownBtnClick"
-                        :class="{disabled: !props.lastBtnChecked && !resultArray.length > 0}"
-                        :disabled=" !props.lastBtnChecked && !resultArray.length > 0">
-                            <i class="fa fa-angle-down" aria-hidden="true"></i>内訳
-                        </button>
+                        <div class="breakdownBtn-Wrap">
+                            <button class="yellowBtn breakdownBtn"
+                            @click="breakdownBtnClick"
+                            :class="{disabled: !props.lastBtnChecked && !resultArray.length > 0}"
+                            :disabled=" !props.lastBtnChecked && !resultArray.length > 0">
+                                <i class="fa fa-angle-down" aria-hidden="true"></i>内訳
+                            </button>
+                        </div>
                     </div>
                     <!-- 内訳を押すと出力 -->
                     <div v-if="resultArray.length > 0 || props.lastBtnChecked" class="result-breakdownArea hide">
@@ -249,13 +289,13 @@ const initialize = () => {
                                 内訳
                             </div>
                             <div class="result-breakdown-items">
-                                <BreakDownItem v-if="props.lastBtnChecked" :result="result" @deleteItem="deleteItemNow" />
-                                <BreakDownItem v-for="resultItem of reverseResultArray" :key="resultItem.id" :result="resultItem" @deleteItem="deleteItem" />
+                                <BreakDownItem v-if="props.lastBtnChecked" :result="result" @deleteItem="deleteItemNow" :campaign="result.campaign" />
+                                <BreakDownItem v-for="resultItem of reverseResultArray" :key="resultItem.id" :result="resultItem" @deleteItem="deleteItem" :campaign="resultItem.campaign" />
                             </div>
                         </div>
                     </div>
                 </div>
-                <small>※通話定額割引はご利用開始月より6ヵ月間適用</small>
+                <small v-if="campaignApply">※通話定額割引はご利用開始月より6ヵ月間適用</small>
             </div>
         </div>
     </div>
@@ -263,8 +303,8 @@ const initialize = () => {
     <div v-if="resultArray.length > 0 || props.lastBtnChecked" class="recommend">
         <h3>あなたに最適なプランはこれ！</h3>
         <button @click="deleteAllItem"  class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>診断結果をすべて削除</button>
-        <RecommendArea v-if="props.lastBtnChecked" :result="result"></RecommendArea>
-        <RecommendArea v-for="resultItem of reverseResultArray" :key="resultItem.id" :result="resultItem"></RecommendArea>
+        <RecommendArea v-if="props.lastBtnChecked" :result="result" :campaign="result.campaign" />
+        <RecommendArea v-for="resultItem of reverseResultArray" :key="resultItem.id" :result="resultItem" :campaign="resultItem.campaign" />
         <button
             @click="addItem"
             class="recommend-addBtn yellowBtn">
@@ -280,11 +320,55 @@ const initialize = () => {
     診断結果領域
 --------------------*/
 .result-area {
-    background-color: #ab8a11;
+    position: relative;
+    background-color: #a5750c;
     margin-top: 100px;
     color: #fff;
     padding: 0 15px 10px;
 }
+.campaign {
+    position: absolute;
+    text-align: center;
+    background-color: #f93087;
+    width: 60%;
+    padding: 5px;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.campaign::after {
+    position: absolute;
+    content: "";
+    border-top: 20px solid #f93087;
+    border-right: 20px solid transparent;
+    border-left: 20px solid transparent;
+    border-bottom: 20px solid transparent;
+    bottom: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.campaign-apply {
+    background-color: #f93087;
+    color: #fff;
+    text-align: center;
+    width: 70%;
+    margin: 10px 20px;
+    border-radius: 5px;
+}
+.campaignPrice {
+    position: relative;
+    color: #f93087;
+    font-weight: bold;
+}
+.campaignPrice::after {
+    content: "※";
+    position: absolute;
+    color: #333;
+    font-size: 1.2rem;
+    bottom: 60%;
+    right: 0;
+}
+
 .result-area > h2 {
     text-align: center;
     font-size: 2.8rem;
@@ -315,31 +399,42 @@ const initialize = () => {
 .result-whiteArea {
     position: relative;
     width: 100%;
-    justify-content: space-between;
     color: #333;
     font-weight: bold;
     background-color: #fff;
+    overflow:hidden;
 }
 .result-firstArea {
     display: flex;
+    justify-content: space-between;
 }
-.result-firstArea div {
+.result-firstArea>div {
+    display: flex;
+    align-items: baseline;
     font-size: 1.8rem;
     padding: 0 10px;
     margin: 10px;
-    width: 27%;
+}
+.result-firstArea span {
+    margin: 0 10px
 }
 .result-firstArea div:nth-of-type(2),
 .result-firstArea div:nth-of-type(3) {
     border-left: 1px solid #333;
+
 }
 .result-firstArea span {
     font-size: 2.8rem;
 }
+.breakdownBtn-Wrap {
+    position: relative;
+    width: 15%;
+}
 .breakdownBtn {
     position: absolute;
-    top: 10px;
+    top: 50%;
     right: 20px;
+    transform: translateY(-50%);
 }
 
 /*--------------------
@@ -356,7 +451,6 @@ const initialize = () => {
     0% {
         transform: translateY(0px);
     }
-
     100% {
         transform: translateY(300px);
     }

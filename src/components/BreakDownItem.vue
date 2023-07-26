@@ -1,6 +1,5 @@
 <script setup>
-const props = defineProps(["result"])
-
+const props = defineProps(["result", "campaign"])
 const emit = defineEmits(["deleteItem"])
 const deleteItem = (target) => {
     const deleteBtnAll = document.querySelectorAll(".deleteBtn")
@@ -12,9 +11,10 @@ const deleteItem = (target) => {
         }
     })
     // resultArrayに保存済みの診断結果は現在シミュレート中の結果は含まないのでインデックスは-1する
-    emit("deleteItem", deleteBtnIndex - 1)
+    // 表示は逆順にしており、削除処理は大元の正順の配列に対し削除処理を行うため
+    // 全削除ボタンの個数-逆順で取得したインデックス-現在処理中のボタンは除く（-lengthは1始まりなので-1で調整）処理を行う
+    emit("deleteItem", (deleteBtnAll.length - deleteBtnIndex - 2))
 }
-
 </script>
 
 <template>
@@ -31,7 +31,7 @@ const deleteItem = (target) => {
                 </div>
                 <div v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && props.result.option !== ''" class="option" >
                     通話定額{{ props.result.option }}+
-                    <div class="result-price">
+                    <div class="result-price" :class="{ campaignPrice : props.campaign }">
                     <span>{{ props.result.optionPrice.toLocaleString() }}</span>円</div>
                 </div>
             </div>
@@ -41,7 +41,6 @@ const deleteItem = (target) => {
         </div>
     </div>
 </template>
-
 
 <style scoped>
 /* 内訳 */
@@ -62,18 +61,38 @@ const deleteItem = (target) => {
 }
 .result-plan-price {
     width: 90%;
+    font-size: 1.8rem;
 }
 .result-plan-price > div {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 10px 5px;
     background-color: #fff;
+}
+.result-price {
+    font-size: 2.0rem;
+}
+.campaignPrice {
+    position: relative;
+    color: #f93087;
+    font-weight: bold;
+}
+.campaignPrice::after {
+    content: "※";
+    position: absolute;
+    color: #333;
+    font-size: 1.2rem;
+    bottom: 60%;
+    right: 0;
+}
+.campaignPrice>span {
+    font-size: 2.4rem;
 }
 .option {
     border-top: 1px dotted #333;
     font-weight: normal;
 }
-
 .result-deleteBtnArea {
     display: flex;
     justify-content: center;

@@ -55,8 +55,8 @@ const questionArray = [
                 image: require("../assets/img/3-1.png"),
                 mainText: "通話定額5分＋",
                 subText: "1回5分以内の国内通話無料",
-                smallPrice: "500",
-                price: "90",
+                optionPrice: "500",
+                campaignPrice: "90",
                 bandMsg: "セール"
             },
             {
@@ -64,8 +64,8 @@ const questionArray = [
                 image: require("../assets/img/3-2.png"),
                 mainText: "通話定額10分＋",
                 subText: "1回10分以内の国内通話無料",
-                smallPrice: "700",
-                price: "290",
+                optionPrice: "700",
+                campaignPrice: "290",
                 bandMsg: "セール"
             },
             {
@@ -73,8 +73,8 @@ const questionArray = [
                 image: require("../assets/img/3-3.png"),
                 mainText: "かけ放題＋",
                 subText: "無制限で国内通話無料",
-                smallPrice: "1400",
-                price: "990",
+                optionPrice: "1400",
+                campaignPrice: "990",
                 bandMsg: "セール"
             },
             {
@@ -82,8 +82,8 @@ const questionArray = [
                 image: require("../assets/img/3-4.png"),
                 mainText: "通話定額は使わない",
                 subText: "",
-                smallPrice: "",
-                price: "",
+                optionPrice: "",
+                campaignPrice: "",
                 bandMsg: ""
             },
         ]
@@ -340,8 +340,8 @@ const encode = (str) => {
                         <div v-if="question.id === 3 && answer.answerId !== 4" class="answerBtn-mainText bold">{{ encode(answer.mainText) }}</div>
                         <div v-else-if="answer.mainText" class="answerBtn-mainText">{{ encode(answer.mainText) }}</div>
                         <div v-if="answer.subText"       class="answerBtn-subText">{{ answer.subText }}</div>
-                        <div v-if="answer.smallPrice"    class="answerBtn-smallPrice">税込<span>{{ answer.smallPrice }}</span>円</div>
-                        <div v-if="answer.price"         class="answerBtn-price">税込<span>{{ answer.price }}</span>円</div>
+                        <div v-if="answer.optionPrice"   class="answerBtn-optionPrice">税込<span>{{ answer.optionPrice }}</span>円</div>
+                        <div v-if="answer.campaignPrice" class="answerBtn-campaignPrice">税込<span>{{ answer.campaignPrice }}</span>円</div>
                         <div v-if="answer.bandMsg === 'セール'"    class="answerBtn-bandMsg_sale">{{ answer.bandMsg }}</div>
                         <div v-if="answer.bandMsg === 'オススメ!'" class="answerBtn-bandMsg_recommend"><div class="tri"></div>{{ answer.bandMsg }}</div>
                     </div>
@@ -420,18 +420,18 @@ const encode = (str) => {
 .answerBtn-subText {
     font-size: 1.3rem;
 }
-.answerBtn-smallPrice {
+.answerBtn-optionPrice {
     text-decoration: line-through;
     font-size: 1.1rem;
 }
 
-.answerBtn-price {
+.answerBtn-campaignPrice {
     font-size: 1.4rem;
     font-weight: bold;
     color: #ff50ad;
     margin-bottom: 10px;
 }
-.answerBtn-price span {
+.answerBtn-campaignPrice span {
     font-size: 1.6rem;
 }
 .simulator-answer-subarea {

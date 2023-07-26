@@ -4,7 +4,7 @@ import { reactive, watch, onMounted } from 'vue'
 /*---------------------------
     データ
 ---------------------------*/
-const props = defineProps(["result"])
+const props = defineProps(["result", "campaign"])
 const recommend = reactive({
     text: "",
     text2: "",
@@ -13,6 +13,9 @@ const recommend = reactive({
     twitter: "",
     ipPhone: "",
     option: "",
+    optionPrice: 0,
+    campaignPrice: 0,
+    campaign: false
 })
 
 /*---------------------------
@@ -159,6 +162,9 @@ const setRecommendData = () => {
     recommend.homePage = props.result.dataVolume * 3410
     recommend.twitter = props.result.dataVolume * 11250
     recommend.ipPhone = props.result.dataVolume * 29
+    recommend.optionPrice = props.result.optionPrice
+    recommend.campaignPrice = props.result.campaignPrice
+    recommend.campaign = props.campaign
 }
 </script>
 
@@ -182,12 +188,25 @@ const setRecommendData = () => {
         <div class="recommend-breakdown">
             <p>内訳</p>
             <div class="recommend-plan-price">
-                <div>
-                    {{ props.result.plan }}<div class="result-price">税込<span>{{ props.result.planPrice.toLocaleString() }}</span>円</div>
+                <div >
+                    <div class="recommend-planName">{{ props.result.plan }}</div>
+                    <div>税込<span class="result-price">{{ props.result.planPrice.toLocaleString() }}</span>円</div>
                 </div>
                 <div v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && props.result.option !== ''">
-                    定額通話{{ props.result.option }}+<div class="result-price">税込<span>{{ props.result.optionPrice.toLocaleString()  }}</span>円</div>
+                    <div>定額通話{{ props.result.option }}+</div>
+                    <div v-if="recommend.campaign">
+                        <span class="normalPrice">税込{{ recommend.optionPrice.toLocaleString() }}円</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
+                        <span class="campaignPrice">税込<span class="result-price">{{ recommend.campaignPrice.toLocaleString() }}</span>円</span>
+                    </div>
+                    <div v-else>税込
+                        <span class="result-price">{{ recommend.optionPrice.toLocaleString() }}</span>円
+                    </div>
                 </div>
+            </div>
+            <small v-if="recommend.campaign">※通話定額割引はご利用開始月より6ヵ月間適用</small>
+            <div v-if="recommend.campaign" class="campaign-detail">
+                <p>適用キャンペーン</p>
+                <p><a href=""><i class="fa fa-caret-square-o-right" aria-hidden="true"></i>サマーキャンペーン【通話オプション割引】詳細はこちら</a></p>
             </div>
         </div>
         <div class="recommend-detail">
@@ -291,6 +310,23 @@ const setRecommendData = () => {
     font-size: 1.8rem;
     font-weight: bold;
 }
+.recommend-breakdown>small {
+    display: block;
+    text-align: right;
+    font-size: 1.2rem;
+}
+.fa-caret-square-o-right {
+    margin-right: 5px;
+}
+.campaign-detail {
+    background-color: #ffd9d9;
+    margin: 15px 0;
+    padding: 15px;
+    font-size: 1.3rem;
+}
+.campaign-detail>p>a {
+    color: #f93087;
+}
 .recommend-plan-price {
     border-top: 1px solid #888;
     border-bottom: 1px solid #888;
@@ -302,17 +338,34 @@ const setRecommendData = () => {
     font-size: 1.8rem;
     padding: 10px;
 }
-.recommend-plan-price>div:first-child {
+.recommend-planName {
     font-weight: bold;
 }
 .recommend-plan-price>div~div {
     border-top: 1px dotted #888;
 }
 .result-price {
-    font-weight: normal;
-}
-.result-price>span {
     font-size: 2.4rem;
+}
+.normalPrice {
+    font-size: 1.2rem;
+    text-decoration: line-through;
+}
+.fa-chevron-right {
+    font-size: 1.2rem;
+}
+.campaignPrice {
+    position: relative;
+    color: #f93087;
+    font-weight: bold;
+}
+.campaignPrice::after {
+    content: "※";
+    position: absolute;
+    color: #333;
+    font-size: 1.2rem;
+    bottom: 60%;
+    right: 0;
 }
 .recommend-detail {
     width: 45%;
