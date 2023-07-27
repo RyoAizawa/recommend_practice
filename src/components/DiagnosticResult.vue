@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, watch, defineEmits, computed } from 'vue'
+import { ref, reactive, watch, defineEmits, computed, onUpdated } from 'vue'
 import RecommendArea from "./RecommendArea";
 import BreakDownItem from "./BreakDownItem";
 /*---------------------------
@@ -57,9 +57,7 @@ let campaignApply = ref(false)
 /*---------------------------
     メソッド
 ---------------------------*/
-const breakdownBtnClick = () => {
-    document.querySelector(".result-breakdownArea").classList.toggle("hide")
-}
+
 const getLastBtnChecked = () => {
     return props.lastBtnChecked
 }
@@ -189,10 +187,6 @@ const checkCampaign = () => {
     resultArray.forEach((elem) => {
         if(elem.option !== "") campaignApply.value = true
     })
-    if (campaignApply.value) {
-        console.log(document.querySelector(".totalPrice"))
-    }
-
 }
 
 const emit = defineEmits(["init"])
@@ -205,6 +199,13 @@ const addItem = () => {
 const deleteItemNow = () => {
     initialize()
     checkCampaign()
+
+    if (resultArray.length < 1) {
+        const accordionArea = document.querySelector(".result-breakdownArea")
+        accordionArea.classList.remove("active");
+        breakDownBtnRotate()
+    }
+
     emit("init");
 }
 const deleteItem = (target) => {
@@ -214,11 +215,19 @@ const deleteItem = (target) => {
     })
     result.id--
     checkCampaign()
+    if (resultArray.length < 1) {
+        const accordionArea = document.querySelector(".result-breakdownArea")
+        accordionArea.classList.remove("active");
+        breakDownBtnRotate()
+    }
 }
 const deleteAllItem = () => {
     initialize()
     checkCampaign()
     resultArray.splice(0)
+    const accordionArea = document.querySelector(".result-breakdownArea")
+    accordionArea.classList.remove("active");
+    breakDownBtnRotate()
     emit("init");
 }
 const initialize = () => {
@@ -233,6 +242,60 @@ const initialize = () => {
     result.optionPrice = 0
     result.totalPrice = 0
 }
+
+const breakdownBtnClick = () => {
+    const accordionArea = document.querySelector(".result-breakdownArea")
+    accordionArea.classList.toggle("active");
+    breakDownBtnRotate()
+    calcAccordionArea()
+}
+
+const breakDownBtnRotate = () => {
+    const accordionArea = document.querySelector(".result-breakdownArea")
+    if (accordionArea.classList.contains("active")) {
+        document.querySelector(".fa-angle-down").animate(
+            [
+            { transform: 'rotate(0deg)' },
+            { transform: 'rotate(180deg)' }
+        ],
+        {
+            duration: 200,
+            fill: "forwards",
+            easing: 'ease-in',
+        })
+    } else {
+        document.querySelector(".fa-angle-down").animate(
+            [
+            { transform: 'rotate(180deg)' },
+            { transform: 'rotate(0deg)' }
+        ],
+        {
+            duration: 200,
+            fill: "forwards",
+            easing: 'ease-in',
+        })
+    }
+}
+
+
+const calcAccordionArea = () => {
+    const accordionArea = document.querySelector(".result-breakdownArea")
+    const accordionItem = document.querySelectorAll(".result-breakdown-item")
+    let totalHeight = 0
+    console.log(accordionItem)
+    accordionItem.forEach((elem) => {
+        totalHeight += elem.scrollHeight
+    });
+    if (accordionArea.classList.contains("active")) {
+        accordionArea.style.setProperty("max-height", totalHeight + 30 + "px");
+    } else {
+        accordionArea.style.setProperty("max-height", 0);
+    }
+}
+
+onUpdated(() => {
+    if(resultArray.length > 0) calcAccordionArea()
+})
 
 </script>
 
@@ -283,14 +346,16 @@ const initialize = () => {
                         </div>
                     </div>
                     <!-- 内訳を押すと出力 -->
-                    <div v-if="resultArray.length > 0 || props.lastBtnChecked" class="result-breakdownArea hide">
-                        <div class="result-breakdownTable">
-                            <div class="result-breakdown-label">
-                                内訳
-                            </div>
-                            <div class="result-breakdown-items">
-                                <BreakDownItem v-if="props.lastBtnChecked" :result="result" @deleteItem="deleteItemNow" :campaign="result.campaign" />
-                                <BreakDownItem v-for="resultItem of reverseResultArray" :key="resultItem.id" :result="resultItem" @deleteItem="deleteItem" :campaign="resultItem.campaign" />
+                    <div v-if="resultArray.length > 0 || props.lastBtnChecked" class="result-breakdownArea" :style="{maxHeight: 0}">
+                        <div>
+                            <div class="result-breakdownTable">
+                                <div class="result-breakdown-label">
+                                    内訳
+                                </div>
+                                <div class="result-breakdown-items">
+                                    <BreakDownItem v-if="props.lastBtnChecked" :result="result" @deleteItem="deleteItemNow" :campaign="result.campaign" class="result-breakdown-item" />
+                                    <BreakDownItem v-for="resultItem of reverseResultArray" :key="resultItem.id" :result="resultItem" @deleteItem="deleteItem" :campaign="resultItem.campaign" class="result-breakdown-item" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -435,25 +500,26 @@ const initialize = () => {
     top: 50%;
     right: 20px;
     transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    padding: 10px;
 }
-
+.fa-angle-down {
+    font-size: 2.4rem;
+}
 /*--------------------
     内訳
 --------------------*/
 .result-breakdownArea {
+    transition: max-height 0.3s;
+    overflow: hidden;
+    max-height: 0;
+}
+.result-breakdownArea>div {
     padding: 15px;
 }
-.hide {
-    display: none;
-    animation: anim 1s;
-    }
-@keyframes anim {
-    0% {
-        transform: translateY(0px);
-    }
-    100% {
-        transform: translateY(300px);
-    }
+.active {
+    max-height: var(--max-height);
 }
 
 .result-breakdownTable {

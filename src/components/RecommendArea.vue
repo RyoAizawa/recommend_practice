@@ -14,6 +14,7 @@ const recommend = reactive({
     ipPhone: "",
     option: "",
     optionPrice: 0,
+    planPrice: 0,
     campaignPrice: 0,
     campaign: false
 })
@@ -162,8 +163,10 @@ const setRecommendData = () => {
     recommend.homePage = props.result.dataVolume * 3410
     recommend.twitter = props.result.dataVolume * 11250
     recommend.ipPhone = props.result.dataVolume * 29
+    recommend.option = props.result.option
     recommend.optionPrice = props.result.optionPrice
     recommend.campaignPrice = props.result.campaignPrice
+    recommend.planPrice = props.result.planPrice
     recommend.campaign = props.campaign
 }
 </script>
@@ -176,10 +179,14 @@ const setRecommendData = () => {
         <div class="recommend-plan">
             <div class="recommend-SIM">{{ props.result.sim }}</div>
             <div class="recommend-GB"><span>{{ props.result.dataVolume }}</span>GB</div>
-            <div class="recommend-price">月額<span>{{ props.result.totalPrice.toLocaleString() }}</span>円</div>
+            <div class="recommend-campaignPrice" v-if="recommend.campaign">
+                <span class="recommend-price campaignPrice">月額<span>{{ props.result.totalPrice.toLocaleString() }}</span>円</span>
+                <span class="normalPrice-total">{{ (recommend.optionPrice + recommend.planPrice).toLocaleString() }}円</span>
+            </div>
+            <div v-else class="recommend-price">月額<span>{{ props.result.totalPrice.toLocaleString() }}</span>円</div>
             <div class="recommend-option">
-                <div  v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && props.result.option !== ''">
-                    定額通話<span>{{ props.result.option }}</span>+
+                <div  v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && recommend.option !== ''">
+                    定額通話<span>{{ recommend.option }}</span>+
                 </div>
             </div>
         </div>
@@ -190,10 +197,10 @@ const setRecommendData = () => {
             <div class="recommend-plan-price">
                 <div >
                     <div class="recommend-planName">{{ props.result.plan }}</div>
-                    <div>税込<span class="result-price">{{ props.result.planPrice.toLocaleString() }}</span>円</div>
+                    <div>税込<span class="result-price">{{ recommend.planPrice.toLocaleString() }}</span>円</div>
                 </div>
-                <div v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && props.result.option !== ''">
-                    <div>定額通話{{ props.result.option }}+</div>
+                <div v-if="(props.result.sim === '音声SIM' || props.result.sim === '音声eSIM' ) && recommend.option !== ''">
+                    <div>定額通話{{ recommend.option }}+</div>
                     <div v-if="recommend.campaign">
                         <span class="normalPrice">税込{{ recommend.optionPrice.toLocaleString() }}円</span><i class="fa fa-chevron-right" aria-hidden="true"></i>
                         <span class="campaignPrice">税込<span class="result-price">{{ recommend.campaignPrice.toLocaleString() }}</span>円</span>
@@ -267,7 +274,7 @@ const setRecommendData = () => {
 .data {color: #2946c9;}
 .SMS {color: #29c92c;}
 .recommend-GB {
-    width: 15%;
+    width: 10%;
     text-align: right;
     font-size: 2.0rem;
     font-weight: bold;
@@ -276,16 +283,27 @@ const setRecommendData = () => {
     font-size: 3.6rem;
 }
 
+.recommend-campaignPrice {
+    position: relative;
+}
 .recommend-price {
-    width: 25%;
+    width: 30%;
     font-size: 2.0rem;
     font-weight: bold;
 }
 .recommend-price span {
     font-size: 3.6rem;
 }
+.normalPrice-total {
+    position: absolute;
+    top: -20px;
+    right: 0;
+    font-size: 1.8rem;
+    color: #b3b3b3;
+    text-decoration: line-through;
+}
 .recommend-option {
-    width: 35%;
+    width: 30%;
     font-size: 2.0rem;
     font-weight: bold;
 }
