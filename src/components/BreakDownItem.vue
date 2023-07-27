@@ -36,7 +36,7 @@ const deleteItem = (target) => {
                 </div>
             </div>
             <div class="result-deleteBtnArea">
-                <button @click="deleteItem($event.currentTarget)" class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i>削除</button>
+                <button @click="deleteItem($event.currentTarget)" class="deleteBtn"><i class="fa fa-times" aria-hidden="true"></i><span>削除</span></button>
             </div>
         </div>
     </div>
@@ -100,4 +100,25 @@ const deleteItem = (target) => {
     width: 20%;
     background-color: #fff;
 }
+@media screen and (max-width:768px) {
+    .result-plan-price {
+        font-size: 1.6rem;
+    }
+    .deleteBtn>span {
+        display: none;
+    }
+    .deleteBtn {
+        padding: 6px 8px;
+        border-radius: 8px;
+        font-size: 2.0rem;
+    }
+    .campaignPrice>span {
+        font-size: 1.8rem;
+    }
+    .result-price {
+        font-size: 1.6rem;
+    }
+
+}
+
 </style>

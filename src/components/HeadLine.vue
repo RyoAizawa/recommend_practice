@@ -1,10 +1,34 @@
 <script setup>
 </script>
 
-<style scope>
+
+<template>
+    <div class="headline">
+        <p>
+            <i class="fa fa-file-text-o" aria-hidden="true"></i
+            >あなたに最適なプランをご提案！
+        </p>
+        <h1> 料金プラン<br>
+            <span class="circle">か</span>
+            <span class="circle">ん</span>
+            <span class="circle">た</span>
+            <span class="circle">ん</span>
+            診断
+        </h1>
+        <p>
+            最大4つの質問に答えるだけで、<br/>あなたにピッタリな料金プランをご提案！
+        </p>
+    </div>
+</template>
+
+
+<style scoped>
 /*--------------------
     ページ見出し
 --------------------*/
+br {
+    display: none;
+}
 .headline {
     text-align: center;
     margin-bottom: 30px;
@@ -36,23 +60,11 @@
 .circle:nth-child(4) {
     background-color: #0fc91f;
 }
-</style>
 
-<template>
-    <div class="headline">
-        <p>
-            <i class="fa fa-file-text-o" aria-hidden="true"></i
-            >あなたに最適なプランをご提案！
-        </p>
-        <h1> 料金プラン
-            <span class="circle">か</span>
-            <span class="circle">ん</span>
-            <span class="circle">た</span>
-            <span class="circle">ん</span>
-            診断
-        </h1>
-        <p>
-            最大4つの質問に答えるだけで、あなたにピッタリな料金プランをご提案！
-        </p>
-    </div>
-</template>
+@media screen and (max-width:768px) {
+    br {
+        display: block;
+    }
+}
+
+</style>

@@ -218,14 +218,18 @@ const setRecommendData = () => {
         </div>
         <div class="recommend-detail">
             <p>こんな方にオススメ！</p>
-            <p><span class="point">&#9679;</span>{{ recommend.text }}</p>
-            <p><span class="point">&#9679;</span>{{ recommend.text2 }}</p>
-            <img :src="recommend.imgSrc">
+            <div class="detail-flex">
+                <div class="detail-flex_text">
+                    <p><span class="point">&#9679;</span>{{ recommend.text }}</p>
+                    <p><span class="point">&#9679;</span>{{ recommend.text2 }}</p>
+                </div>
+                <img :src="recommend.imgSrc">
+            </div>
         </div>
     </div>
     <div class="recommend-text">
         <p>このデータ量の利用目安（{{ props.result.dataVolume }}GB）</p>
-        <p>・ホームページ閲覧：約{{recommend.homePage.toLocaleString()}}回・Twitter：約{{ recommend.twitter.toLocaleString() }}回・IP電話：約{{ recommend.ipPhone.toLocaleString() }}時間</p>
+        <p>・ホームページ閲覧：約{{recommend.homePage.toLocaleString()}}回<br/>・Twitter：約{{ recommend.twitter.toLocaleString() }}回<br/>・IP電話：約{{ recommend.ipPhone.toLocaleString() }}時間<br/></p>
         <small>※1 ホームページ閲覧：Yahoo!トップページ（モバイル版）を表示／※2 Twitter：公式アプリで全角140文字でツイート後リロードする／※3 IP電話：Skypeを使用し通話<br/></small>
         <small>※弊社で独自に調査した結果であり、常にそのデータ量で利用できることを保証するものではありません。</small>
     </div>
@@ -310,11 +314,6 @@ const setRecommendData = () => {
 .recommend-option span {
     font-size: 2.6rem;
 }
-.recommend-phone {
-    text-align: right;
-    font-size: 2.6rem;
-    font-weight: bold;
-}
 .recommend-breakdownArea {
     display: flex;
     padding: 10px 20px 0;
@@ -391,7 +390,7 @@ const setRecommendData = () => {
     font-size: 1.2rem;
     line-height: 1;
 }
-.recommend-detail p:first-child {
+.recommend-detail>p {
     font-size: 1.4rem;
     text-align: center;
     font-weight: bold;
@@ -416,6 +415,89 @@ const setRecommendData = () => {
 .recommend-text p:first-child {
     font-weight: bold;
     color: #ab8a11;
+}
+.recommend-text>p>br {
+    display: none;
+}
+
+@media screen and (max-width:768px) {
+
+    .recommend-item-summery {
+        padding: 10px 0;
+    }
+    .recommend-plan-icon>img{
+        display: block;
+        max-width: 30px;
+        max-height: 30px;
+        margin: 5px 0 5px 5px;
+    }
+    .recommend-plan {
+        gap: 5px;
+        justify-content: start;
+    }
+    .recommend-SIM {
+        font-size: 1.2rem;
+        width: auto;
+    }
+    .recommend-GB {
+        font-size: 1.2rem;
+        width: auto;
+    }
+    .recommend-GB span {
+        font-size: 1.8rem;
+    }
+    .recommend-price {
+        font-size: 1.2rem;
+        width: auto;
+    }
+    .recommend-price span {
+        font-size: 1.8rem;
+    }
+    .normalPrice-total {
+        font-size: 1.2rem;
+    }
+    .recommend-option {
+        font-size: 1.2rem;
+        width: auto;
+    }
+    .recommend-option span {
+        font-size: 1.8rem;
+    }
+    .recommend-breakdownArea {
+        display: block;
+        padding: 10px 0 0;
+    }
+    .recommend-breakdown {
+        width: 100%;
+    }
+    .campaign-detail {
+        font-size: 1.2rem;
+    }
+    .recommend-plan-price>div {
+        font-size: 1.6rem;
+    }
+    .result-price {
+        font-size: 1.8rem;
+    }
+    .recommend-detail {
+        width: 100%;
+    }
+    .detail-flex {
+        display: flex;
+    }
+    .detail-flex_text {
+        font-size: 1.1rem;
+    }
+    .recommend-detail img {
+        max-width: 200px;
+    }
+    .recommend-text {
+        padding: 10px;
+        font-size: 1.2rem;
+    }
+    .recommend-text>p>br {
+        display: block;
+    }
 }
 
 </style>

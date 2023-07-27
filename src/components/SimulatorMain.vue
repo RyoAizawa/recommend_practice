@@ -227,19 +227,15 @@ const btnClick = (currentSlide, questionArray, currentQuestionId, answer, curren
     currentQuestions.forEach((elem) => {
         // 今回の質問に対する選択済みクラスを一旦初期化
         elem.classList.remove("answered", "notAnswered")
-        const children= elem.children
-        for (let child of children) {
-            child.classList.remove("selectedMainText")
-        }
+        let mainText = elem.querySelectorAll(".selectedMainText")
+        mainText.forEach((item) => {
+            item.classList.remove("selectedMainText")
+        })
         // 今回選択した選択肢に選択済みのクラスを付与
         if (elem === currentTarget) {
             elem.classList.add("answered")
-            const children= elem.children
-            for (let child of children) {
-                if (child.classList.contains("answerBtn-mainText")) {
-                    child.classList.add("selectedMainText")
-                }
-            }
+            mainText = elem.querySelector(".answerBtn-mainText")
+            mainText.classList.add("selectedMainText")
         } else {
             elem.classList.add("notAnswered")
         }
@@ -295,10 +291,10 @@ const initialize = () => {
     const answerBtnAll = document.querySelectorAll(".simulator-answerBtn")
     answerBtnAll.forEach((elem) => {
         elem.classList.remove("answered", "notAnswered")
-        const children= elem.children
-        for (let child of children) {
-            child.classList.remove("selectedMainText")
-        }
+        const mainText = elem.querySelectorAll(".selectedMainText")
+        mainText.forEach((item) => {
+            item.classList.remove("selectedMainText")
+        })
     })
 }
 
@@ -309,15 +305,6 @@ const autoScroll = (target) => {
     setTimeout(() => {
         scroll(0, position);
     }, 200);
-}
-
-// 改行したいけどできない
-const encode = (str) => {
-    // 改行を含む文字列の場合、改行コードをbrタグに変換する
-    if (str.match("\n") !== null) {
-        str = str.replace(/\n/g, "<br>")
-    }
-    return str
 }
 
 </script>
@@ -336,14 +323,18 @@ const encode = (str) => {
                     <div v-for="answer in question.answerArray" :key="answer"
                     @click="btnClick({currentSlide}, questionArray, question.id, answer, $event.currentTarget); lastBntChecked(question.id) "
                     class="simulator-answerBtn">
-                        <div v-if="answer.image"         class="answerBtn-Image"><img :src="answer.image"></div>
-                        <div v-if="question.id === 3 && answer.answerId !== 4" class="answerBtn-mainText bold">{{ encode(answer.mainText) }}</div>
-                        <div v-else-if="answer.mainText" class="answerBtn-mainText">{{ encode(answer.mainText) }}</div>
-                        <div v-if="answer.subText"       class="answerBtn-subText">{{ answer.subText }}</div>
-                        <div v-if="answer.optionPrice"   class="answerBtn-optionPrice">税込<span>{{ answer.optionPrice }}</span>円</div>
-                        <div v-if="answer.campaignPrice" class="answerBtn-campaignPrice">税込<span>{{ answer.campaignPrice }}</span>円</div>
-                        <div v-if="answer.bandMsg === 'セール'"    class="answerBtn-bandMsg_sale">{{ answer.bandMsg }}</div>
-                        <div v-if="answer.bandMsg === 'オススメ!'" class="answerBtn-bandMsg_recommend"><div class="tri"></div>{{ answer.bandMsg }}</div>
+                        <div v-if="answer.image" class="answerBtn-Image"><img :src="answer.image"></div>
+                        <div>
+                            <div v-if="question.id === 3 && answer.answerId !== 4" class="answerBtn-mainText bold">{{ answer.mainText }}</div>
+                            <div v-else-if="answer.mainText" class="answerBtn-mainText">{{ answer.mainText }}</div>
+                            <div v-if="answer.subText"       class="answerBtn-subText">{{ answer.subText }}</div>
+                        </div>
+                        <div>
+                            <div v-if="answer.optionPrice"   class="answerBtn-optionPrice">税込<span>{{ answer.optionPrice }}</span>円</div>
+                            <div v-if="answer.campaignPrice" class="answerBtn-campaignPrice">税込<span>{{ answer.campaignPrice }}</span>円</div>
+                        </div>
+                        <span v-if="answer.bandMsg === 'セール'"    class="answerBtn-bandMsg_sale">{{ answer.bandMsg }}</span>
+                        <span v-if="answer.bandMsg === 'オススメ!'" class="answerBtn-bandMsg_recommend"><div class="tri"></div>{{ answer.bandMsg }}</span>
                     </div>
                 </div>
                 <div class="simulator-answer-subarea">
@@ -479,11 +470,11 @@ const encode = (str) => {
 
 .carousel__item {
     width: 100%;
-    height: 350px;
+    height: 400px;
 }
 .answerBtn-bandMsg_sale {
     position: absolute;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     background-color: red;
     top: 0;
     right: 15px;
@@ -514,6 +505,38 @@ const encode = (str) => {
     border-right: 15px solid #ff50ad;
     border-bottom: 20px solid transparent;
     z-index: 0;
+}
+
+
+@media screen and (max-width:768px) {
+    .simulator-question {
+        font-size: 1.8rem;
+    }
+    .simulator-answer-area {
+        display: block;
+    }
+    .simulator-answerBtn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        min-height: 100px;
+        margin-bottom: 10px;
+    }
+    .simulator-answerBtn>div:last-of-type {
+        margin: 0 20px;
+    }
+    .answerBtn-campaignPrice {
+        width: 100%;
+    }
+    .carousel__item {
+        height: 700px;
+        margin: 0 20px;
+    }
+
+    .simulator-answer-subarea {
+        width: 100%;
+    }
 }
 
 </style>

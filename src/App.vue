@@ -6,6 +6,25 @@ import GlobalFooter from "./components/GlobalFooter";
 import AnnotationArea from './components/AnnotationArea';
 </script>
 
+<template>
+    <GlobalHeader />
+    <main>
+        <div class="container">
+            <!-- ページ見出し -->
+            <HeadLine />
+            <!-- シミュレータ表示領域 -->
+            <div class="simulator-area">
+                <!-- シミュレータ -->
+                <SimulatorMain />
+                <!-- 注釈 -->
+                <AnnotationArea />
+            </div>
+        </div>
+    </main>
+    <GlobalFooter />
+</template>
+
+
 <style>
 /*--------------------
     グローバル
@@ -37,7 +56,7 @@ small {
 }
 
 .container {
-    width: 900px;
+    max-width: 900px;
     margin: 30px auto;
 }
 /*--------------------
@@ -79,22 +98,9 @@ small {
     padding: 30px;
 }
 
+@media screen and (max-width:768px) {
+    .simulator-area {
+        padding: 30px 0;
+    }
+}
 </style>
-
-<template>
-    <GlobalHeader />
-    <main>
-        <div class="container">
-            <!-- ページ見出し -->
-            <HeadLine />
-            <!-- シミュレータ表示領域 -->
-            <div class="simulator-area">
-                <!-- シミュレータ -->
-                <SimulatorMain></SimulatorMain>
-                <!-- 注釈 -->
-                <AnnotationArea />
-            </div>
-        </div>
-    </main>
-    <GlobalFooter />
-</template>

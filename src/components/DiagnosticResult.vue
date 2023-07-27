@@ -387,7 +387,7 @@ onUpdated(() => {
 .result-area {
     position: relative;
     background-color: #a5750c;
-    margin-top: 100px;
+    margin-top: 150px;
     color: #fff;
     padding: 0 15px 10px;
 }
@@ -397,7 +397,7 @@ onUpdated(() => {
     background-color: #f93087;
     width: 60%;
     padding: 5px;
-    top: -60px;
+    top: -70px;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -408,7 +408,7 @@ onUpdated(() => {
     border-right: 20px solid transparent;
     border-left: 20px solid transparent;
     border-bottom: 20px solid transparent;
-    bottom: -100%;
+    top: 100%;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -575,5 +575,51 @@ onUpdated(() => {
 }
 .fa-chevron-right {
     margin-right: 40px;
+}
+.result-calcArea-right>small {
+    font-size: 1.2rem;
+}
+
+@media screen and (max-width:768px) {
+
+    .result-area {
+        padding: 0 5px 10px;
+    }
+    .result-calcArea>p {
+        display: none;
+    }
+    .result-calcArea-right {
+        width: 100%;
+    }
+    .result-firstArea>div {
+        display: block;
+        text-align: center;
+        margin: 10px 0;
+        font-size: 1.4rem;
+    }
+    .breakdownBtn-Wrap {
+        width: 15%;
+    }
+    .breakdownBtn {
+        font-weight: normal;
+        flex-direction: column-reverse;
+        right: 10px;
+        min-height: 60px;
+        padding: 5px;
+        border-radius: 8px;
+        border: 1px solid;
+        font-size: 1.4rem;
+    }
+    .result-calcArea-right>small {
+        font-size: 1.6rem;
+    }
+
+    .recommend>.deleteBtn {
+        position: static;
+        display: block;
+        margin: 0 auto;
+        padding: 5px;
+        margin-bottom: 20px;
+    }
 }
 </style>
