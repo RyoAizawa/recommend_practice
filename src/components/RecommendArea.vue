@@ -483,6 +483,7 @@ watch(props, () => {
     }
     .recommend-breakdown {
         width: 100%;
+        border-right: none;
     }
     .campaign-detail {
         font-size: 1.2rem;
