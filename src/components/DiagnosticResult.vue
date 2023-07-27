@@ -5,7 +5,14 @@ import BreakDownItem from "./BreakDownItem";
 /*---------------------------
     データ
 ---------------------------*/
+/*
+    props
+    userAnswers ... ユーザーが回答した内容を格納
+    lastBtnChecked ... 最後の質問に回答したか否か
+    autoScroll ... 指定した要素へ自動スクロールするメソッド
+*/
 const props = defineProps(["userAnswers", "lastBtnChecked", "autoScroll"])
+// 今回回答した情報を格納するデータ
 const result = reactive({
     id: 0,
     lines: 0,
@@ -20,47 +27,32 @@ const result = reactive({
     totalPrice: 0,
     campaign: false
 })
+// 前回まで回答した情報を格納するデータ
 const resultArray = reactive([])
-const reverseResultArray = computed(() => {
-    return resultArray.slice().reverse()
-})
-const count = computed(() => {
-    let now = 0
-    if(props.lastBtnChecked) now = 1
-    return resultArray.length + 1 + now
-})
-const totalLines = computed(() => {
-    let now = 0
-    if(props.lastBtnChecked) now = 1
-    return resultArray.length + now
-})
-const totalDataVolume = computed(() => {
-    let now = 0
-    let total = 0
-    if(props.lastBtnChecked) now = result.dataVolume
-    resultArray.forEach((elem) => {
-        total += elem.dataVolume
-    })
-    return total + now
-})
-const totalPrice = computed(() => {
-    let now = 0
-    let total = 0
-    if(props.lastBtnChecked) now = result.planPrice + result.campaignPrice
-    resultArray.forEach((elem) => {
-        total += elem.planPrice + elem.campaignPrice
-    })
-    return total + now
-})
+// キャンペーン価格を適用するかどうかのフラグ
 let campaignApply = ref(false)
+// 初期化を親に通知
+const emit = defineEmits(["init"])
 
 /*---------------------------
     メソッド
 ---------------------------*/
-
+/*
+    ブラウザ出力するデータを降順にするためのメソッド
+*/
+const reverseResultArray = computed(() => {
+    return resultArray.slice().reverse()
+})
+/*
+    最後の質問にチェックしたか値を返すメソッド
+*/
 const getLastBtnChecked = () => {
     return props.lastBtnChecked
 }
+/*
+    最後の質問にチェックしたら、本コンポーネントが持つ診断中のデータに
+    propsから受けたデータをもとに値をセットするメソッド
+*/
 const setResultData = () => {
     if (props.lastBtnChecked) {
         let voice = false
@@ -134,6 +126,9 @@ const setResultData = () => {
         calcPlanAndTotalPrice()
     }
 }
+/*
+    プラン名をもとに診断中データの月額を計算するメソッド
+*/
 const calcPlanAndTotalPrice = () => {
     result.plan = `${result.sim}${result.dataVolume}ギガプラン`
     switch (result.plan) {
@@ -166,6 +161,10 @@ const calcPlanAndTotalPrice = () => {
     }
     result.totalPrice = result.planPrice + result.campaignPrice
 }
+
+/*
+    最後の質問にチェックしたかを監視
+*/
 watch(getLastBtnChecked, () => {
     if (props.lastBtnChecked) {
         props.autoScroll(document.querySelector(".result-area"))
@@ -174,6 +173,9 @@ watch(getLastBtnChecked, () => {
         setResultData()
     }
 })
+/*
+    回答内容に変更があるか監視
+*/
 watch(props.userAnswers, () => {
     result.option = ""
     result.campaign = false
@@ -181,6 +183,9 @@ watch(props.userAnswers, () => {
     checkCampaign()
 })
 
+/*
+    キャンペーンを適用するか判定するメソッド
+*/
 const checkCampaign = () => {
     campaignApply.value = false
     if(result.option !== "") campaignApply.value  = true
@@ -189,38 +194,51 @@ const checkCampaign = () => {
     })
 }
 
-const emit = defineEmits(["init"])
+/*
+    「n人目を診断する」を押した際に走るメソッド
+    前回まで診断したデータ配列に、現在のデータをここでプッシュし初期化
+*/
 const addItem = () => {
     if (props.lastBtnChecked) {
         resultArray.push(Object.assign({},result))
     }
     emit("init");
 }
+
+/*
+    現在診断中のデータに対し削除ボタンを押された際に走るメソッド
+*/
 const deleteItemNow = () => {
     initialize()
     checkCampaign()
-
     if (resultArray.length < 1) {
         const accordionArea = document.querySelector(".result-breakdownArea")
         accordionArea.classList.remove("active");
         breakDownBtnRotate()
     }
-
     emit("init");
 }
+/*
+    前回まで診断したデータに対し削除ボタンを押された際に走るメソッド
+*/
 const deleteItem = (target) => {
     resultArray.splice(target, 1)
+    // 前回まで診断したデータ配列の、削除対象よりidが後の物は-1して調整する
     resultArray.forEach((elem) => {
         if(elem.id > target) elem.id--
     })
+    // 現在の診断結果も-1する
     result.id--
     checkCampaign()
-    if (resultArray.length < 1) {
+    if (resultArray.length < 1 && !props.lastBtnChecked) {
         const accordionArea = document.querySelector(".result-breakdownArea")
         accordionArea.classList.remove("active");
         breakDownBtnRotate()
     }
 }
+/*
+    診断結果を全て削除ボタンを押された際に走るメソッド
+*/
 const deleteAllItem = () => {
     initialize()
     checkCampaign()
@@ -230,6 +248,9 @@ const deleteAllItem = () => {
     breakDownBtnRotate()
     emit("init");
 }
+/*
+    現在診断中のデータを初期化するメソッド
+*/
 const initialize = () => {
     result.id = 0
     result.lines = 0
@@ -242,14 +263,18 @@ const initialize = () => {
     result.optionPrice = 0
     result.totalPrice = 0
 }
-
+/*
+    内訳ボタンをクリックした際に走るメソッド
+*/
 const breakdownBtnClick = () => {
     const accordionArea = document.querySelector(".result-breakdownArea")
     accordionArea.classList.toggle("active");
     breakDownBtnRotate()
     calcAccordionArea()
 }
-
+/*
+    内訳ボタン内のアイコンを、状況に応じて回転させるメソッド
+*/
 const breakDownBtnRotate = () => {
     const accordionArea = document.querySelector(".result-breakdownArea")
     if (accordionArea.classList.contains("active")) {
@@ -277,12 +302,13 @@ const breakDownBtnRotate = () => {
     }
 }
 
-
+/*
+    内訳ボタンをクリックした際に、内訳領域を開閉するメソッド
+*/
 const calcAccordionArea = () => {
     const accordionArea = document.querySelector(".result-breakdownArea")
     const accordionItem = document.querySelectorAll(".result-breakdown-item")
     let totalHeight = 0
-    console.log(accordionItem)
     accordionItem.forEach((elem) => {
         totalHeight += elem.scrollHeight
     });
@@ -293,8 +319,61 @@ const calcAccordionArea = () => {
     }
 }
 
+/*
+    内訳ボタンをクリックした際に、内訳領域を開閉するメソッドを呼ぶ
+    result-breakdown-itemがレンダリングされた後に呼ぶ必要があるためonUpdatedを使用
+*/
 onUpdated(() => {
     if(resultArray.length > 0) calcAccordionArea()
+})
+
+
+/*---------------------------
+    算出プロパティ
+---------------------------*/
+/*
+    「n人目を診断する」ボタンの人数をカウントするメソッド
+    現在の診断が終わったら、前回まで診断した総数に＋１する
+*/
+const count = computed(() => {
+    let now = 0
+    if(props.lastBtnChecked) now = 1
+    return resultArray.length + 1 + now
+})
+/*
+    診断した回線数をカウントするメソッド
+    現在の診断が終わったら、前回まで診断した総数に＋１する
+*/
+const totalLines = computed(() => {
+    let now = 0
+    if(props.lastBtnChecked) now = 1
+    return resultArray.length + now
+})
+/*
+    総データ量を計算するメソッド
+    現在の診断が終わったら、前回まで診断した総数に現在の値を加算する
+*/
+const totalDataVolume = computed(() => {
+    let now = 0
+    let total = 0
+    if(props.lastBtnChecked) now = result.dataVolume
+    resultArray.forEach((elem) => {
+        total += elem.dataVolume
+    })
+    return total + now
+})
+/*
+    総データ量を計算するメソッド
+    現在の診断が終わったら、前回まで診断した総数に現在の値を加算する
+*/
+const totalPrice = computed(() => {
+    let now = 0
+    let total = 0
+    if(props.lastBtnChecked) now = result.planPrice + result.campaignPrice
+    resultArray.forEach((elem) => {
+        total += elem.planPrice + elem.campaignPrice
+    })
+    return total + now
 })
 
 </script>

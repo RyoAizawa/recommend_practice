@@ -1,6 +1,24 @@
 <script setup>
+/*---------------------------
+    データ
+---------------------------*/
+/*
+    props
+    userAnswers ... ユーザーが回答した内容を格納
+    lastBtnChecked ... 最後の質問に回答したか否か
+    autoScroll ... 指定した要素へ自動スクロールするメソッド
+*/
 const props = defineProps(["result", "campaign"])
+// 削除ボタンを押されたことを親に通知
 const emit = defineEmits(["deleteItem"])
+/*---------------------------
+    メソッド
+---------------------------*/
+/*
+    削除ボタンを押された際に走るメソッド
+    押されたボタンのインデックスを判定し親コンポーネントへ伝える
+    実際の削除は親でやる
+*/
 const deleteItem = (target) => {
     const deleteBtnAll = document.querySelectorAll(".deleteBtn")
     let deleteBtnIndex = 0;

@@ -1,10 +1,15 @@
 <script setup>
 import { reactive, watch, onMounted } from 'vue'
-
 /*---------------------------
     データ
 ---------------------------*/
+/*
+    props
+    result ... ユーザーが回答した内容をもとに親で格納したデータ群
+    campaign ... キャンペーンを適用するか否か
+*/
 const props = defineProps(["result", "campaign"])
+// 診断結果を格納するデータ群
 const recommend = reactive({
     text: "",
     text2: "",
@@ -22,13 +27,9 @@ const recommend = reactive({
 /*---------------------------
     メソッド
 ---------------------------*/
-onMounted(() => {
-    setRecommendData()
-})
-watch(props, () => {
-    setRecommendData()
-})
-
+/*
+    ユーザーが回答した内容をもとに診断結果のデータを格納するメソッド
+*/
 const setRecommendData = () => {
     const recommendSim = document.querySelector(".recommend-SIM")
     recommendSim.classList.remove("voiceSIM","SMS","dataeSIM","data")
@@ -169,6 +170,19 @@ const setRecommendData = () => {
     recommend.planPrice = props.result.planPrice
     recommend.campaign = props.campaign
 }
+/*
+    コンポーネントがマウントされたらデータを格納
+*/
+onMounted(() => {
+    setRecommendData()
+})
+/*
+    回答内容に変更があったか監視
+*/
+watch(props, () => {
+    setRecommendData()
+})
+
 </script>
 
 <template>

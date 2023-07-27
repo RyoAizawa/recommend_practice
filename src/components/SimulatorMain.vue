@@ -279,6 +279,9 @@ const carouselForeword = (answered, currentSlide) => {
     if (userAnswersFlow.length > 0) isBackBtnActive.value = true
 }
 
+/*
+    削除や2人目以降の診断を開始する際に、前回の情報を初期化するメソッド
+*/
 const initialize = () => {
     const target = document.querySelector(".simulator-main");
     autoScroll(target)
@@ -298,6 +301,9 @@ const initialize = () => {
     })
 }
 
+/*
+    指定した要素へスクロールするメソッド
+*/
 const autoScroll = (target) => {
     let rect = target.getBoundingClientRect();
     // 要素の頂点の高さを設定
